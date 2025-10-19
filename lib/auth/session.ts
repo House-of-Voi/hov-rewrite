@@ -22,6 +22,11 @@ export async function getServerSessionFromRequest(): Promise<SessionInfo | null>
     // Validate the CDP access token
     const cdpUser = await validateCdpToken(token);
 
+    // If token is expired or invalid, return null (will trigger re-auth)
+    if (!cdpUser) {
+      return null;
+    }
+
     // Look up the profile associated with this CDP user
     const supabase = createAdminClient();
     const { data: session } = await supabase

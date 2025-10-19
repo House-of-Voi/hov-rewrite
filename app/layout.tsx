@@ -1,6 +1,7 @@
 import './globals.css';
 import React from 'react';
 import { CdpProvider } from '@/components/CdpProvider';
+import { Providers } from './providers';
 import UserNav from '@/components/UserNav';
 
 export const metadata = { title: 'House of Voi 🎰', description: 'Digital casino on the blockchain' };
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-screen">
+        <Providers>
         <CdpProvider>
         <header className="sticky top-0 z-50 glass-casino border-b border-gold-900/20">
           <div className="mx-auto max-w-7xl px-6">
@@ -48,16 +50,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Games
                 </a>
                 <a
+                  href="/stats"
+                  className="px-5 py-2.5 text-sm font-bold text-neutral-400 hover:text-gold-400 hover:bg-gold-500/5 rounded-lg transition-all tracking-wide uppercase"
+                >
+                  Stats
+                </a>
+                <a
+                  href="/leaderboard"
+                  className="px-5 py-2.5 text-sm font-bold text-neutral-400 hover:text-gold-400 hover:bg-gold-500/5 rounded-lg transition-all tracking-wide uppercase"
+                >
+                  Leaderboard
+                </a>
+                <a
                   href="/app"
                   className="px-5 py-2.5 text-sm font-bold text-neutral-400 hover:text-gold-400 hover:bg-gold-500/5 rounded-lg transition-all tracking-wide uppercase"
                 >
                   Dashboard
-                </a>
-                <a
-                  href="/admin"
-                  className="px-5 py-2.5 text-sm font-bold text-royal-400 hover:text-royal-300 hover:bg-royal-500/5 rounded-lg transition-all tracking-wide uppercase"
-                >
-                  Admin
                 </a>
                 <UserNav />
               </nav>
@@ -84,6 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
         </CdpProvider>
+        </Providers>
       </body>
     </html>
   );

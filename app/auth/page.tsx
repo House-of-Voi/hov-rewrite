@@ -378,6 +378,7 @@ export default function AuthPage() {
   useEffect(() => {
     if (currentUser && !oauthProcessed && !loading) {
       setOauthProcessed(true);
+      setStatus('Restoring your session...');
 
       // Determine auth method from OAuth state or default to email
       const method = oauthState?.status === 'success' ? 'oauth' : 'email';
@@ -398,7 +399,21 @@ export default function AuthPage() {
         </p>
       </div>
 
-      {!otpSent ? (
+      {/* Status Display - Shown at top when active */}
+      {status && (
+        <div className={`p-6 rounded-xl text-center font-semibold text-lg ${
+          status.includes('Success')
+            ? 'bg-green-500/20 text-green-400 border-2 border-green-500/30'
+            : status.includes('Error') || status.includes('failed') || status.includes('Failed')
+            ? 'bg-ruby-500/20 text-ruby-400 border-2 border-ruby-500/30'
+            : 'bg-gold-500/20 text-gold-400 border-2 border-gold-500/30'
+        }`}>
+          {status}
+        </div>
+      )}
+
+      {/* Hide all forms when loading/processing */}
+      {!loading && !otpSent ? (
         <>
           {/* Referral Code (Required) */}
           <Card glow>
@@ -492,7 +507,7 @@ export default function AuthPage() {
             </CardContent>
           </Card>
         </>
-      ) : (
+      ) : !loading && otpSent ? (
         /* OTP Verification */
         <Card glow>
           <CardContent className="space-y-4">
@@ -536,20 +551,7 @@ export default function AuthPage() {
             </Button>
           </CardContent>
         </Card>
-      )}
-
-      {/* Status Display */}
-      {status && (
-        <div className={`p-4 rounded-xl text-center font-semibold ${
-          status.includes('Success')
-            ? 'bg-green-500/20 text-green-400 border-2 border-green-500/30'
-            : status.includes('Error') || status.includes('failed') || status.includes('Failed')
-            ? 'bg-ruby-500/20 text-ruby-400 border-2 border-ruby-500/30'
-            : 'bg-gold-500/20 text-gold-400 border-2 border-gold-500/30'
-        }`}>
-          {status}
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

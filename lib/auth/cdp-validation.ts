@@ -180,25 +180,49 @@ export async function validateCdpTokenJwks(accessToken: string): Promise<CdpEndU
 }
 
 /**
+ * Checks if an error indicates that a token has expired
+ */
+function isTokenExpiredError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return message.includes('expired') || message.includes('exp');
+  }
+  return false;
+}
+
+/**
  * Validates CDP access token with fallback strategy
  *
  * CDP access tokens are JWTs that can be verified using JWKS.
  * We try JWKS validation first, then fall back to API validation if needed.
  *
  * @param accessToken - The CDP access token
- * @returns CdpEndUser information
+ * @returns CdpEndUser information, or null if token is expired
+ * @throws Error if token validation fails for other reasons
  */
-export async function validateCdpToken(accessToken: string): Promise<CdpEndUser> {
+export async function validateCdpToken(accessToken: string): Promise<CdpEndUser | null> {
   // Prefer the official API validation (requires CDP API key and ensures latest claims)
   try {
     return await validateCdpAccessToken(accessToken);
   } catch (apiError) {
+    // If API validation failed due to expired token, don't bother with JWKS
+    if (isTokenExpiredError(apiError)) {
+      console.warn('CDP token has expired');
+      return null;
+    }
+
     console.warn('CDP API validation failed, trying JWKS validation:', apiError);
 
     // Fallback to JWKS validation (works for JWT-form tokens without API access)
     try {
       return await validateCdpTokenJwks(accessToken);
     } catch (jwksError) {
+      // Check if JWKS error is also an expiration error
+      if (isTokenExpiredError(jwksError)) {
+        console.warn('CDP token has expired');
+        return null;
+      }
+
       // Both methods failed
       const jwksMessage =
         jwksError instanceof Error ? jwksError.message : 'Unknown JWKS validation error';
