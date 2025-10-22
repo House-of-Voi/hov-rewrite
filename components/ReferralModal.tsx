@@ -6,11 +6,30 @@ import CopyButton from './CopyButton';
 import { TicketIcon } from './icons';
 import { formatCurrency } from '@/lib/referrals/credits';
 
+interface Referral {
+  id: string;
+  referral_code: string;
+  referred_profile_id?: string | null;
+  attributed_at?: string | null;
+  converted_at?: string | null;
+  deactivated_at?: string | null;
+  created_at: string;
+}
+
+interface ReferralDetail {
+  username: string;
+  profile_id: string;
+  joined_at: string;
+  gamesPlayed: number;
+  creditsEarned: number;
+  totalWagered: number;
+}
+
 interface ReferralModalProps {
   isOpen: boolean;
   onClose: () => void;
-  referrals: any[];
-  referralDetails: Record<string, any>;
+  referrals: Referral[];
+  referralDetails: Partial<Record<string, ReferralDetail>>;
 }
 
 export default function ReferralModal({
@@ -166,7 +185,7 @@ export default function ReferralModal({
         <div className="pt-4 border-t border-neutral-800">
           <p className="text-sm text-neutral-500">
             <strong className="text-neutral-400">Tip:</strong> Create unique codes for each person
-            you want to invite. Once they sign up and play, you'll earn 0.5% of their wagers as
+            you want to invite. Once they sign up and play, you&rsquo;ll earn 0.5% of their wagers as
             free credits!
           </p>
         </div>

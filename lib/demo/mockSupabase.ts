@@ -3,91 +3,125 @@ import {
   mockAccounts,
   mockReferrals,
   mockAttributions,
-  mockSessions
+  mockSessions,
 } from './mockData';
+
+type Row = Record<string, unknown>;
+
+interface SupabaseResult<T> {
+  data: T;
+  error: null;
+}
+
+const tableData: Record<string, Row[]> = {
+  profiles: [mockProfile as Row],
+  accounts: mockAccounts as Row[],
+  referrals: mockReferrals as Row[],
+  referral_attributions: mockAttributions as Row[],
+  sessions: mockSessions as Row[],
+  nonces: [],
+};
+
+function toArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
+}
+
+function filterRows(data: Row[], column: string, value: unknown): Row[] {
+  return data.filter((row) => row[column] === value);
+}
 
 // Mock Supabase client that returns demo data
 export function createMockSupabaseClient() {
   return {
     from: (table: string) => {
-      const tables: Record<string, any[]> = {
-        profiles: [mockProfile],
-        accounts: mockAccounts,
-        referrals: mockReferrals,
-        referral_attributions: mockAttributions,
-        sessions: mockSessions,
-        nonces: [],
-      };
-
-      const data = tables[table] || [];
+      const data = tableData[table] ?? [];
 
       return {
-        select: (columns?: string) => ({
-          eq: (column: string, value: any) => {
-            const filtered = data.filter((row: any) => row[column] === value);
-            return Promise.resolve({ data: filtered, error: null });
-          },
-          single: () => {
-            return Promise.resolve({ data: data[0] || null, error: null });
-          },
-          then: (resolve: any) => resolve({ data, error: null }),
-        }),
-        insert: (values: any) => ({
+        select: (_columns?: string) => {
+          void _columns;
+
+          return {
+            eq: (column: string, value: unknown) =>
+              Promise.resolve<SupabaseResult<Row[]>>({
+                data: filterRows(data, column, value),
+                error: null,
+              }),
+            single: () =>
+              Promise.resolve<SupabaseResult<Row | null>>({
+                data: data[0] ?? null,
+                error: null,
+              }),
+            then: <Return>(resolve: (result: SupabaseResult<Row[]>) => Return) =>
+              resolve({ data, error: null }),
+          };
+        },
+        insert: (values: Row | Row[]) => ({
           select: () => ({
             single: () => {
+              const [newRecord] = toArray(values);
               console.log(`[DEMO] Mock insert into ${table}:`, values);
-              const newRecord = Array.isArray(values) ? values[0] : values;
-              return Promise.resolve({
-                data: { id: 'mock-' + Date.now(), ...newRecord },
-                error: null
+              return Promise.resolve<SupabaseResult<Row>>({
+                data: { id: `mock-${Date.now()}`, ...(newRecord ?? {}) },
+                error: null,
               });
             },
-            then: (resolve: any) => {
+            then: <Return>(resolve: (result: SupabaseResult<Row[]>) => Return) => {
+              const records = toArray(values).map((record) => ({
+                id: `mock-${Date.now()}`,
+                ...(record ?? {}),
+              }));
               console.log(`[DEMO] Mock insert into ${table}:`, values);
-              const records = Array.isArray(values) ? values : [values];
-              return resolve({
-                data: records.map((r: any) => ({ id: 'mock-' + Date.now(), ...r })),
-                error: null
-              });
+              return resolve({ data: records, error: null });
             },
           }),
-          then: (resolve: any) => {
+          then: <Return>(resolve: (result: SupabaseResult<null>) => Return) => {
             console.log(`[DEMO] Mock insert into ${table}:`, values);
             return resolve({ data: null, error: null });
           },
         }),
-        update: (values: any) => ({
-          eq: (column: string, value: any) => {
-            console.log(`[DEMO] Mock update ${table} where ${column}=${value}:`, values);
-            return Promise.resolve({ data: null, error: null });
+        update: (values: Row) => ({
+          eq: (column: string, value: unknown) => {
+            console.log(
+              `[DEMO] Mock update ${table} where ${column}=${String(value)}:`,
+              values
+            );
+            return Promise.resolve<SupabaseResult<null>>({
+              data: null,
+              error: null,
+            });
           },
-          then: (resolve: any) => {
+          then: <Return>(resolve: (result: SupabaseResult<null>) => Return) => {
             console.log(`[DEMO] Mock update ${table}:`, values);
             return resolve({ data: null, error: null });
           },
         }),
         delete: () => ({
-          eq: (column: string, value: any) => {
-            console.log(`[DEMO] Mock delete from ${table} where ${column}=${value}`);
-            return Promise.resolve({ data: null, error: null });
+          eq: (column: string, value: unknown) => {
+            console.log(
+              `[DEMO] Mock delete from ${table} where ${column}=${String(value)}`
+            );
+            return Promise.resolve<SupabaseResult<null>>({
+              data: null,
+              error: null,
+            });
           },
-          then: (resolve: any) => {
+          then: <Return>(resolve: (result: SupabaseResult<null>) => Return) => {
             console.log(`[DEMO] Mock delete from ${table}`);
             return resolve({ data: null, error: null });
           },
         }),
-        upsert: (values: any) => ({
+        upsert: (values: Row | Row[]) => ({
           select: () => ({
             single: () => {
+              const [newRecord] = toArray(values);
               console.log(`[DEMO] Mock upsert into ${table}:`, values);
-              const newRecord = Array.isArray(values) ? values[0] : values;
-              return Promise.resolve({
-                data: { id: 'mock-' + Date.now(), ...newRecord },
-                error: null
+              return Promise.resolve<SupabaseResult<Row>>({
+                data: { id: `mock-${Date.now()}`, ...(newRecord ?? {}) },
+                error: null,
               });
             },
           }),
-          then: (resolve: any) => {
+          then: <Return>(resolve: (result: SupabaseResult<null>) => Return) => {
             console.log(`[DEMO] Mock upsert into ${table}:`, values);
             return resolve({ data: null, error: null });
           },
@@ -95,7 +129,11 @@ export function createMockSupabaseClient() {
       };
     },
     auth: {
-      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      getSession: () =>
+        Promise.resolve({
+          data: { session: null },
+          error: null,
+        }),
       signOut: () => Promise.resolve({ error: null }),
     },
   };

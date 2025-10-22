@@ -47,11 +47,8 @@ export async function verifyVoi(input: VerifyInput): Promise<VerifyResult> {
       return { ok: false, error: 'Invalid signature length (expected 64 bytes)' };
     }
 
-    // Decode the address to get the public key
-    const publicKey = algosdk.decodeAddress(address).publicKey;
-
-    // Verify the signature
-    const isValid = algosdk.verifyBytes(messageBytes, signatureBytes, publicKey);
+    // Verify the signature using the address directly (algosdk 3.x accepts address string)
+    const isValid = algosdk.verifyBytes(messageBytes, signatureBytes, address);
 
     if (!isValid) {
       return { ok: false, error: 'Signature verification failed' };

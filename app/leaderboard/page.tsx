@@ -61,7 +61,7 @@ export default function LeaderboardPage() {
           <div>
             <h3 className="text-emerald-400 font-semibold mb-2">Daily Leaderboard</h3>
             <p>
-              Shows player rankings for a specific day. By default, displays today's leaderboard with real-time updates. You can select any previous date to view historical daily rankings.
+              Shows player rankings for a specific day. By default, displays today&apos;s leaderboard with real-time updates. You can select any previous date to view historical daily rankings.
             </p>
           </div>
           <div>

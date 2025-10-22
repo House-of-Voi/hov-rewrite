@@ -109,7 +109,10 @@ function isMissingRelationError(error: unknown): boolean {
     return false;
   }
 
-  const message = 'message' in error ? String((error as any).message) : '';
+  const message =
+    'message' in error && typeof (error as { message?: unknown }).message === 'string'
+      ? (error as { message: string }).message
+      : '';
 
   return (
     message.includes('relation "stats_snapshots_daily" does not exist') ||

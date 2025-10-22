@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@/lib/db/supabaseAdmin';
+import { createAdminClient } from '@/lib/db/supabaseAdmin';
 
 const schema = z.object({
   address: z.string().min(1),
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     domain: req.headers.get('host') ?? undefined,
   };
 
-  const supabase = createClient();
+  const supabase = createAdminClient();
   await supabase.from('nonces').upsert({
     address, chain, nonce: payload.nonce, expires_at: expiresAt.toISOString(),
   }, { onConflict: 'chain,address' });

@@ -152,6 +152,13 @@ export const mockReferrals = [
   },
 ];
 
+export const mockAttributions: Array<{
+  id: string;
+  referral_id: string;
+  profile_id: string | null;
+  created_at: string;
+}> = [];
+
 export const mockSessions = [
   {
     id: '990e8400-e29b-41d4-a716-446655440001',

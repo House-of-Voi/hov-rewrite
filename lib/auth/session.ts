@@ -11,6 +11,8 @@ export interface SessionInfo {
   cdpUserId?: string;
   baseWalletAddress?: string;
   jti?: string; // For backward compatibility
+  profileId: string; // Alias for sub for clarity
+  gameAccessGranted?: boolean;
 }
 
 export async function getServerSessionFromRequest(): Promise<SessionInfo | null> {
@@ -42,10 +44,19 @@ export async function getServerSessionFromRequest(): Promise<SessionInfo | null>
       return null;
     }
 
+    // Get profile to check game access
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('game_access_granted')
+      .eq('id', session.profile_id)
+      .single();
+
     return {
       sub: session.profile_id,
+      profileId: session.profile_id,
       cdpUserId: session.cdp_user_id,
       baseWalletAddress: cdpUser.walletAddress,
+      gameAccessGranted: profile?.game_access_granted || false,
     };
   } catch (error) {
     console.error('Session validation error:', error);
@@ -121,4 +132,14 @@ export async function getCurrentUserAccounts(): Promise<Array<{
     derivedFromChain: acc.derived_from_chain,
     derivedFromAddress: acc.derived_from_address,
   }));
+}
+
+/**
+ * Checks if the current user has access to games
+ *
+ * @returns true if user has game access, false otherwise
+ */
+export async function hasGameAccess(): Promise<boolean> {
+  const session = await getServerSessionFromRequest();
+  return session?.gameAccessGranted || false;
 }

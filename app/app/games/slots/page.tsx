@@ -207,12 +207,18 @@ export default function SlotsGame() {
 
               {/* Chain Selector */}
               <div>
-                <label className="block text-sm font-medium text-gold-400 mb-2">
+                <label className="block text-sm font-medium text-gold-400 mb-2" htmlFor="network">
                   Network
                 </label>
                 <select
+                  id="network"
                   value={chain}
-                  onChange={(e) => setChain(e.target.value as any)}
+                  onChange={(e) => {
+                    const selectedChain = e.target.value;
+                    if (selectedChain === 'base' || selectedChain === 'voi' || selectedChain === 'solana') {
+                      setChain(selectedChain);
+                    }
+                  }}
                   className="w-full rounded-xl border-2 border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-neutral-100 transition-all focus:border-gold-500 focus:ring-2 focus:ring-gold-500"
                 >
                   <option value="base">Base</option>

@@ -11,6 +11,7 @@ import {
   useGetAccessToken,
   useExportEvmAccount,
   useEvmAddress,
+  useSignOut,
   type OAuth2ProviderType,
   type User
 } from '@coinbase/cdp-hooks';
@@ -46,7 +47,7 @@ function normalizeE164Phone(input: string): string | null {
   }
 
   if (normalizedDigits.length === 11 && normalizedDigits.startsWith('1')) {
-    normalizedDigits = normalizedDigits;
+    // Already includes the US country code prefix.
   } else if (normalizedDigits.length === 10) {
     normalizedDigits = `1${normalizedDigits}`;
   } else {
@@ -69,6 +70,7 @@ export default function AuthPage() {
   const [authMethod, setAuthMethod] = useState<'email' | 'sms' | 'oauth' | null>(null);
   const [otpSent, setOtpSent] = useState(false);
   const [oauthProcessed, setOauthProcessed] = useState(false);
+  const [inputMode, setInputMode] = useState<'email' | 'phone'>('email');
   const router = useRouter();
 
   const { signInWithEmail } = useSignInWithEmail();
@@ -158,10 +160,10 @@ export default function AuthPage() {
 
       // Verify based on auth method
       if (authMethod === 'email') {
-        const result = await verifyEmailOTP({ email, otp: otpCode, flowId });
+        const result = await verifyEmailOTP({ otp: otpCode, flowId });
         user = result.user;
       } else if (authMethod === 'sms') {
-        const result = await verifySmsOTP({ phoneNumber: phone, otp: otpCode, flowId });
+        const result = await verifySmsOTP({ otp: otpCode, flowId });
         user = result.user;
       } else {
         throw new Error('Invalid authentication method');
@@ -228,7 +230,7 @@ export default function AuthPage() {
       let exportedPrivateKey: string | null = null;
       for (const candidate of candidateAccounts) {
         try {
-          const { privateKey } = await exportEvmAccount({ evmAccount: candidate });
+          const { privateKey } = await exportEvmAccount({ evmAccount: candidate as `0x${string}` });
           if (privateKey) {
             exportedPrivateKey = privateKey;
             break;
@@ -355,14 +357,26 @@ export default function AuthPage() {
       router.push('/app');
     } catch (error) {
       console.error('Complete auth error:', error);
-      setStatus(
-        error instanceof Error
-          ? error.message
-          : 'Failed to complete authentication. Please try again.'
-      );
+      const errorMessage = error instanceof Error ? error.message : 'Failed to complete authentication. Please try again.';
+
+      // If token expired, clear state and prompt for re-auth
+      if (errorMessage.includes('expired') || errorMessage.includes('Invalid or expired CDP')) {
+        setStatus('Session expired. Please sign in again.');
+        setOtpSent(false);
+        setOtpCode('');
+        setEmail('');
+        setPhone('');
+        setAuthMethod(null);
+        setOauthProcessed(false);
+        // Clear any stale cookies
+        document.cookie = 'hov_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      } else {
+        setStatus(errorMessage);
+      }
+
       setLoading(false);
     }
-  }, [exportEvmAccount, evmAddress, getAccessToken, router]);
+  }, [exportEvmAccount, evmAddress, getAccessToken, referralCode, router]);
 
   // Load referral code from cookie on mount
   useEffect(() => {
@@ -389,169 +403,182 @@ export default function AuthPage() {
   }, [oauthState, currentUser, oauthProcessed, loading, completeAuthentication]);
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto">
-      <div className="text-center space-y-3">
-        <h1 className="text-5xl font-black text-gold-400 neon-text uppercase">
-          Sign In
-        </h1>
-        <p className="text-neutral-400 text-lg">
-          Login with Email, Phone, or Social Account
-        </p>
-      </div>
-
-      {/* Status Display - Shown at top when active */}
-      {status && (
-        <div className={`p-6 rounded-xl text-center font-semibold text-lg ${
-          status.includes('Success')
-            ? 'bg-green-500/20 text-green-400 border-2 border-green-500/30'
-            : status.includes('Error') || status.includes('failed') || status.includes('Failed')
-            ? 'bg-ruby-500/20 text-ruby-400 border-2 border-ruby-500/30'
-            : 'bg-gold-500/20 text-gold-400 border-2 border-gold-500/30'
-        }`}>
-          {status}
+    <div className="min-h-[80vh] flex items-center justify-center py-12">
+      <div className="w-full max-w-md space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">
+            Welcome
+          </h1>
+          <p className="text-neutral-400">
+            Sign in or create your account
+          </p>
         </div>
-      )}
 
-      {/* Hide all forms when loading/processing */}
-      {!loading && !otpSent ? (
-        <>
-          {/* Referral Code (Required) */}
-          <Card glow>
-            <CardContent className="space-y-4">
-              <Input
-                label="Referral Code (Required)"
-                type="text"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                placeholder="XXXXXXX"
-                maxLength={7}
-              />
-              {referralCode && (
-                <p className="text-sm text-neutral-400">
-                  {referralCode.length === 7
-                    ? '✓ Code format valid'
-                    : `${7 - referralCode.length} characters remaining`}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+        {/* Status Display */}
+        {status && (
+          <div className={`p-4 rounded-xl text-center font-semibold ${
+            status.includes('Success')
+              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+              : status.includes('Error') || status.includes('failed') || status.includes('Failed')
+              ? 'bg-ruby-500/20 text-ruby-400 border border-ruby-500/30'
+              : 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
+          }`}>
+            {status}
+          </div>
+        )}
 
-          {/* Email Authentication */}
-          <Card glow>
-            <CardContent className="space-y-4">
-              <Input
-                label="Email Address"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-              />
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={handleEmailAuth}
-                disabled={loading || !email || referralCode.length !== 7}
-                className="w-full"
-              >
-                Continue with Email
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Phone Authentication */}
-          <Card glow>
-            <CardContent className="space-y-4">
-              <Input
-                label="Phone Number"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1-555-123-4567"
-              />
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={handleSmsAuth}
-                disabled={loading || !phone || referralCode.length !== 7}
-                className="w-full"
-              >
-                Continue with Phone
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Social Login Options */}
-          <Card glow>
-            <CardContent className="space-y-3">
-              <p className="text-neutral-400 text-sm text-center mb-2">
-                Or sign in with
-              </p>
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={() => handleSocialLogin('google')}
-                disabled={loading || referralCode.length !== 7}
-                className="w-full"
-              >
-                Continue with Google
-              </Button>
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={() => handleSocialLogin('apple')}
-                disabled={loading || referralCode.length !== 7}
-                className="w-full"
-              >
-                Continue with Apple
-              </Button>
-            </CardContent>
-          </Card>
-        </>
-      ) : !loading && otpSent ? (
-        /* OTP Verification */
+        {/* Main Auth Card */}
         <Card glow>
-          <CardContent className="space-y-4">
-            <div className="text-center mb-4">
-              <p className="text-neutral-300">
-                We sent a verification code to:
-              </p>
-              <p className="text-gold-400 font-semibold">
-                {authMethod === 'email' ? email : phone}
-              </p>
-            </div>
-            <Input
-              label="Verification Code"
-              type="text"
-              value={otpCode}
-              onChange={e => setOtpCode(e.target.value)}
-              placeholder="Enter 6-digit code"
-              maxLength={6}
-            />
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={handleVerifyOtp}
-              disabled={loading || !otpCode}
-              className="w-full"
-            >
-              Verify & Continue
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                setOtpSent(false);
-                setOtpCode('');
-                setStatus(null);
-              }}
-              disabled={loading}
-              className="w-full"
-            >
-              Go Back
-            </Button>
+          <CardContent className="p-8">
+            {!otpSent ? (
+              <div className="space-y-6">
+                {/* Social Login First (Most friction-free) */}
+                <div className="space-y-3">
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => handleSocialLogin('google')}
+                    disabled={loading}
+                    className="w-full text-base py-3"
+                  >
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
+                  </Button>
+                </div>
+
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gold-900/30"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-neutral-950 text-neutral-500">or</span>
+                  </div>
+                </div>
+
+                {/* Email/Phone Inputs */}
+                <div className="space-y-4">
+                  {inputMode === 'email' ? (
+                    <>
+                      <Input
+                        label="Email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && email) handleEmailAuth();
+                        }}
+                      />
+
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={handleEmailAuth}
+                        disabled={loading || !email}
+                        className="w-full"
+                      >
+                        Continue with Email
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Input
+                        label="Phone Number"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+1 (555) 123-4567"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && phone) handleSmsAuth();
+                        }}
+                      />
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={handleSmsAuth}
+                        disabled={loading || !phone}
+                        className="w-full"
+                      >
+                        Continue with Phone
+                      </Button>
+                    </>
+                  )}
+
+                  {/* Toggle between email and phone */}
+                  <button
+                    onClick={() => setInputMode(inputMode === 'email' ? 'phone' : 'email')}
+                    disabled={loading}
+                    className="w-full text-center text-sm text-neutral-500 hover:text-neutral-400 underline"
+                  >
+                    {inputMode === 'email' ? 'Use phone number instead' : 'Use email instead'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* OTP Verification */
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <div className="text-5xl mb-4">📧</div>
+                  <h2 className="text-xl font-bold text-gold-400">Check your {authMethod === 'email' ? 'email' : 'phone'}</h2>
+                  <p className="text-neutral-400 text-sm">
+                    We sent a verification code to
+                  </p>
+                  <p className="text-gold-400 font-semibold">
+                    {authMethod === 'email' ? email : phone}
+                  </p>
+                </div>
+
+                <Input
+                  label="Verification Code"
+                  type="text"
+                  value={otpCode}
+                  onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="000000"
+                  maxLength={6}
+                  className="text-center text-2xl tracking-widest"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && otpCode.length === 6) handleVerifyOtp();
+                  }}
+                />
+
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={handleVerifyOtp}
+                  disabled={loading || otpCode.length !== 6}
+                  className="w-full"
+                >
+                  Verify & Continue
+                </Button>
+
+                <button
+                  onClick={() => {
+                    setOtpSent(false);
+                    setOtpCode('');
+                    setStatus(null);
+                  }}
+                  disabled={loading}
+                  className="w-full text-center text-sm text-neutral-500 hover:text-neutral-400 underline"
+                >
+                  ← Use a different method
+                </button>
+              </div>
+            )}
           </CardContent>
         </Card>
-      ) : null}
+
+        {/* Footer Info */}
+        <p className="text-center text-xs text-neutral-600">
+          By continuing, you agree to our Terms of Service and Privacy Policy
+        </p>
+      </div>
     </div>
   );
 }

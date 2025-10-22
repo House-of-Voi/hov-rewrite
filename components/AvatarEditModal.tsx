@@ -192,9 +192,28 @@ export default function AvatarEditModal({
     fileInputRef.current?.click();
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget && !isUploading) {
       handleCancel();
+    }
+  };
+
+  const handleOverlayKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!isUploading && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      handleCancel();
+    }
+
+    if (event.key === 'Escape' && !isUploading) {
+      event.stopPropagation();
+      handleCancel();
+    }
+  };
+
+  const handleDropZoneKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleDropZoneClick();
     }
   };
 
@@ -202,13 +221,19 @@ export default function AvatarEditModal({
     <div
       className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
+      onKeyDown={handleOverlayKeyDown}
+      role="button"
+      aria-label="Close avatar editor"
+      tabIndex={0}
     >
       <div
         className="bg-neutral-900 rounded-xl border-2 border-gold-500/30 max-w-lg w-full p-6 space-y-6"
-        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="avatar-modal-title"
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-bold text-gold-400 uppercase">
+          <h3 id="avatar-modal-title" className="text-2xl font-bold text-gold-400 uppercase">
             {currentAvatarUrl ? 'Change Avatar' : 'Upload Avatar'}
           </h3>
           <button
@@ -242,7 +267,10 @@ export default function AvatarEditModal({
                   : 'border-gold-500/30 hover:border-gold-500/50 hover:bg-gold-500/5'
               }
             `}
-          >
+            role="button"
+            tabIndex={0}
+            onKeyDown={handleDropZoneKeyDown}
+            >
             <div className="flex flex-col items-center gap-4">
               <div className="text-5xl">
                 {isDragging ? '📥' : '📷'}
@@ -255,7 +283,7 @@ export default function AvatarEditModal({
                   Click to browse or drag and drop
                 </p>
                 <p className="text-neutral-500 text-xs mt-1">
-                  Any image format • Any size (we'll optimize it)
+                  Any image format • Any size (we&apos;ll optimize it)
                 </p>
               </div>
             </div>

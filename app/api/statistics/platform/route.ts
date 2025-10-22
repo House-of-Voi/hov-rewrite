@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import type { PostgrestError } from '@supabase/supabase-js';
 
 import { appCache } from '@/lib/cache/SimpleCache';
 import { CacheKeys } from '@/lib/cache/keys';
@@ -7,7 +8,6 @@ import { CacheTTL } from '@/lib/cache/config';
 import { createAdminClient } from '@/lib/db/supabaseAdmin';
 import { getPlatformStats, getPlatformStatsByDate } from '@/lib/mimir/queries';
 import { mimirClient } from '@/lib/mimir/client';
-import { getLatestPlatformSnapshot } from '@/lib/statistics/snapshots';
 
 const querySchema = z.object({
   contractId: z.coerce.number().int().nonnegative(),
@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ok: true, data: cached, source: 'cache' });
     }
 
-    const supabase = createAdminClient();
     let mimirStats: Awaited<ReturnType<typeof getPlatformStats>>;
 
     if (query.timeframe === 'daily' && targetDate) {
@@ -166,7 +165,7 @@ async function loadMachineConfigMap(contractId?: number) {
   if (error || !data) {
     const code =
       error && typeof error === 'object' && 'code' in error
-        ? String((error as any).code)
+        ? String((error as PostgrestError).code)
         : undefined;
 
     if (code === 'PGRST205') {

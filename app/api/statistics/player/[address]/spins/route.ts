@@ -27,10 +27,10 @@ type PlayerSpinsPayload = {
 
 export async function GET(
   request: NextRequest,
-  context: { params: { address: string } }
+  context: { params: Promise<{ address: string }> }
 ) {
   try {
-    const routeParams = await Promise.resolve(context.params);
+    const routeParams = await context.params;
     const { address } = paramsSchema.parse(routeParams);
 
     const url = new URL(request.url);

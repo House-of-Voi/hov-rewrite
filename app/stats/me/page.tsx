@@ -12,7 +12,7 @@ const ALPHA_SLOTS_CONTRACT_ID = 40879920;
 
 export default function MyStatsPage() {
   const router = useRouter();
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+  const [selectedAddress] = useState<string | null>(null);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['myProfileStats', ALPHA_SLOTS_CONTRACT_ID],

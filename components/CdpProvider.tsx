@@ -9,14 +9,12 @@ interface CdpProviderProps {
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_CDP_PROJECT_ID;
 
-const AUTH_METHODS: AuthMethod[] = ['email', 'sms', 'oauth:google', 'oauth:apple'];
-
 const CDP_CONFIG: CdpConfig | null = PROJECT_ID
   ? {
       projectId: PROJECT_ID,
       appName: 'House of Voi',
       showCoinbaseFooter: false,
-      authMethods: AUTH_METHODS,
+      authMethods: ['email', 'sms', 'oauth:google'] as [AuthMethod, ...AuthMethod[]],
       debugging: process.env.NODE_ENV !== 'production',
       ethereum: {
         createOnLogin: 'smart',

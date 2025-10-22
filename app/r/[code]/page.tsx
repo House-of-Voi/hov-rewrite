@@ -1,11 +1,12 @@
 import { cookies } from 'next/headers';
+import Link from 'next/link';
 import { validateReferralCode } from '@/lib/referrals/validation';
 import { notFound } from 'next/navigation';
 
 export default async function ReferralPage({
   params,
 }: {
-  params: { code: string };
+  params: Promise<{ code: string }>;
 }) {
   const resolvedParams = await params;
   const code = resolvedParams.code.toUpperCase();
@@ -19,7 +20,8 @@ export default async function ReferralPage({
   }
 
   // Set cookie regardless of capacity (user can still sign up)
-  cookies().set('hov_ref', code, {
+  const cookieStore = await cookies();
+  cookieStore.set('hov_ref', code, {
     httpOnly: false,
     path: '/',
     maxAge: 60 * 60 * 24 * 30,
@@ -59,7 +61,7 @@ export default async function ReferralPage({
 
       {/* Benefits Section */}
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 space-y-6">
-        <h2 className="text-2xl font-bold text-center">What You'll Get</h2>
+        <h2 className="text-2xl font-bold text-center">What You&apos;ll Get</h2>
 
         <div className="grid md:grid-cols-3 gap-6">
           <div className="text-center space-y-2">
@@ -95,18 +97,18 @@ export default async function ReferralPage({
           Your referral code has been saved. Create your account now to unlock all features.
         </p>
         <div className="flex gap-4 justify-center">
-          <a
+          <Link
             href="/auth"
             className="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg font-bold hover:bg-opacity-90 transition-all"
           >
             Create Account
-          </a>
-          <a
+          </Link>
+          <Link
             href="/"
             className="inline-block px-8 py-4 border-2 border-white text-white rounded-lg font-bold hover:bg-white hover:text-blue-600 transition-all"
           >
             Learn More
-          </a>
+          </Link>
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import { CdpClient } from '@coinbase/cdp-sdk';
+import type { JWTPayload } from 'jose';
 import { env } from '../utils/env';
 
 /**
@@ -13,6 +14,13 @@ export interface CdpEndUser {
 }
 
 let cachedCdpClient: CdpClient | null = null;
+
+type AuthMethodPayload = JWTPayload & {
+  email?: string;
+  phone_number?: string;
+  social_provider?: string;
+  wallet_address?: string;
+};
 
 function getCdpClient(): CdpClient {
   if (!cachedCdpClient) {
@@ -129,7 +137,7 @@ export async function validateCdpAccessToken(
 /**
  * Determines the authentication method used by the end user
  */
-function determineAuthMethod(userData: any): 'email' | 'phone' | 'social' {
+function determineAuthMethod(userData: AuthMethodPayload): 'email' | 'phone' | 'social' {
   if (userData.email && !userData.social_provider) return 'email';
   if (userData.phone_number) return 'phone';
   if (userData.social_provider) return 'social';
@@ -168,7 +176,7 @@ export async function validateCdpTokenJwks(accessToken: string): Promise<CdpEndU
       email: payload.email as string | undefined,
       phoneNumber: payload.phone_number as string | undefined,
       walletAddress: walletClaim,
-      authMethod: determineAuthMethod(payload),
+      authMethod: determineAuthMethod(payload as AuthMethodPayload),
     };
   } catch (error) {
     throw new Error(

@@ -1,16 +1,36 @@
 import Card, { CardContent, CardHeader } from '@/components/Card';
-import { SlotMachineIcon, DiceIcon, CardSuitIcon, CheckCircleIcon, TrendingUpIcon } from '@/components/icons';
+import { SlotMachineIcon, DiceIcon, CardSuitIcon, CheckCircleIcon } from '@/components/icons';
 import ChainBadge from '@/components/ChainBadge';
 import { getServerSessionFromRequest } from '@/lib/auth/session';
 import { DEMO_MODE } from '@/lib/utils/env';
 
+type SupportedChain = 'base' | 'voi' | 'solana';
+type SlotResult = { reels: string[]; multiplier: number };
+type DiceResult = { roll: number; prediction: string; multiplier: number };
+type CardResult = { hand: string[]; outcome: string; multiplier: number };
+type BaseGameHistory = {
+  id: string;
+  gameName: string;
+  chain: SupportedChain;
+  betAmount: number;
+  payout: number;
+  profit: number;
+  txHash: string;
+  seed: string;
+  createdAt: string;
+};
+type GameHistoryEntry =
+  | (BaseGameHistory & { gameType: 'slots'; result: SlotResult })
+  | (BaseGameHistory & { gameType: 'dice'; result: DiceResult })
+  | (BaseGameHistory & { gameType: 'cards'; result: CardResult });
+
 // Mock game history - will be replaced with database queries
-const gameHistory = [
+const gameHistory: GameHistoryEntry[] = [
   {
     id: '1',
     gameType: 'slots',
     gameName: '5-Reel Slots',
-    chain: 'base' as const,
+    chain: 'base',
     betAmount: 0.50,
     payout: 5.00,
     profit: 4.50,
@@ -23,7 +43,7 @@ const gameHistory = [
     id: '2',
     gameType: 'slots',
     gameName: '5-Reel Slots',
-    chain: 'voi' as const,
+    chain: 'voi',
     betAmount: 0.10,
     payout: 0.00,
     profit: -0.10,
@@ -36,7 +56,7 @@ const gameHistory = [
     id: '3',
     gameType: 'dice',
     gameName: 'Dice Roll',
-    chain: 'solana' as const,
+    chain: 'solana',
     betAmount: 1.00,
     payout: 3.00,
     profit: 2.00,
@@ -49,7 +69,7 @@ const gameHistory = [
     id: '4',
     gameType: 'slots',
     gameName: '5-Reel Slots',
-    chain: 'base' as const,
+    chain: 'base',
     betAmount: 0.25,
     payout: 0.75,
     profit: 0.50,
@@ -80,7 +100,7 @@ export default async function GameHistory() {
   const totalProfit = totalPayout - totalWagered;
   const winRate = (gameHistory.filter(g => g.profit > 0).length / gameHistory.length * 100).toFixed(1);
 
-  const getGameIcon = (type: string) => {
+  const getGameIcon = (type: GameHistoryEntry['gameType']) => {
     switch (type) {
       case 'slots': return SlotMachineIcon;
       case 'dice': return DiceIcon;
@@ -241,7 +261,7 @@ export default async function GameHistory() {
                         <div className="text-xs text-neutral-500 mb-2">Result:</div>
                         {game.gameType === 'slots' && (
                           <div className="flex gap-2">
-                            {(game.result as any).reels.map((symbol: string, idx: number) => (
+                            {game.result.reels.map((symbol, idx) => (
                               <div
                                 key={idx}
                                 className="w-12 h-12 rounded-lg bg-neutral-800 border border-gold-900/20 flex items-center justify-center text-2xl"
@@ -251,16 +271,22 @@ export default async function GameHistory() {
                             ))}
                             <div className="flex items-center ml-4">
                               <span className="text-gold-400 font-bold">
-                                {(game.result as any).multiplier}x
+                                {game.result.multiplier}x
                               </span>
                             </div>
                           </div>
                         )}
                         {game.gameType === 'dice' && (
                           <div className="text-neutral-300">
-                            Roll: <span className="font-bold">{(game.result as any).roll}</span> |
-                            Prediction: <span className="font-bold">{(game.result as any).prediction}</span> |
-                            Multiplier: <span className="text-gold-400 font-bold">{(game.result as any).multiplier}x</span>
+                            Roll: <span className="font-bold">{game.result.roll}</span> |
+                            Prediction: <span className="font-bold">{game.result.prediction}</span> |
+                            Multiplier: <span className="text-gold-400 font-bold">{game.result.multiplier}x</span>
+                          </div>
+                        )}
+                        {game.gameType === 'cards' && (
+                          <div className="text-neutral-300">
+                            Outcome: <span className="font-bold">{game.result.outcome}</span> |
+                            Multiplier: <span className="text-gold-400 font-bold">{game.result.multiplier}x</span>
                           </div>
                         )}
                       </div>

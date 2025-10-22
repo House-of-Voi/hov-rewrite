@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
       );
 
       if (snapshot?.stats_data) {
-        const snapshotData = snapshot.stats_data as LeaderboardEntryResponse[];
+        const snapshotData = snapshot.stats_data as unknown as LeaderboardEntryResponse[];
         appCache.set(cacheKey, snapshotData, CacheTTL.LEADERBOARD);
         return NextResponse.json({
           ok: true,

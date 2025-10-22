@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Card, { CardContent, CardHeader } from '@/components/Card';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
-import { SlotMachineIcon, DiceIcon, CardSuitIcon, CheckCircleIcon } from '@/components/icons';
+import { SlotMachineIcon, DiceIcon, CardSuitIcon } from '@/components/icons';
 
 // Mock game data
 const mockGames = [

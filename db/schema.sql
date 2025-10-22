@@ -51,6 +51,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   avatar_url text,
   referral_code text UNIQUE,
   max_referrals int NOT NULL DEFAULT 5,
+  game_access_granted boolean NOT NULL DEFAULT false,
+  waitlist_position int,
+  waitlist_joined_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -209,6 +212,7 @@ CREATE TABLE IF NOT EXISTS public.daily_stats (
 
 -- Core tables
 CREATE INDEX IF NOT EXISTS idx_profiles_referral_code ON public.profiles(referral_code);
+CREATE INDEX IF NOT EXISTS idx_profiles_waitlist ON public.profiles(waitlist_position) WHERE game_access_granted = false;
 CREATE INDEX IF NOT EXISTS idx_accounts_profile ON public.accounts(profile_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_profile ON public.sessions(profile_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_cdp_user ON public.sessions(cdp_user_id);

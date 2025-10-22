@@ -15,13 +15,14 @@ const querySchema = z.object({
   contractId: z.coerce.number().int().nonnegative().optional(),
 });
 
-export async function GET(
-  request: NextRequest,
-  context: { params: { address: string } }
-) {
+type RouteContext = {
+  params: Promise<{ address: string }>;
+};
+
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const routeParams = await Promise.resolve(context.params);
-    const { address } = paramsSchema.parse(routeParams);
+    const params = await context.params;
+    const { address } = paramsSchema.parse(params);
 
     const url = new URL(request.url);
     const { contractId } = querySchema.parse({

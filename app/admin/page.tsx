@@ -141,7 +141,7 @@ export default async function AdminDashboard() {
 
       {/* Today's Performance */}
       <div>
-        <h2 className="text-2xl font-bold text-gold-400 uppercase mb-4">Today's Performance</h2>
+        <h2 className="text-2xl font-bold text-gold-400 uppercase mb-4">Today&apos;s Performance</h2>
         <div className="grid md:grid-cols-5 gap-6">
           <StatCard
             title="Total Wagered"

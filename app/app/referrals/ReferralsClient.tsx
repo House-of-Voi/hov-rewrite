@@ -36,7 +36,8 @@ export default function ReferralsClient() {
         } else {
           setError(data.error || 'Failed to load referral stats');
         }
-      } catch (err) {
+      } catch (error) {
+        console.error('Failed to load referral stats:', error);
         setError('Failed to load referral stats');
       } finally {
         setLoading(false);
@@ -222,8 +223,8 @@ export default function ReferralsClient() {
           {stats.queuedReferrals > 0 && (
             <p className="text-sm text-yellow-400">
               💡 You have {stats.queuedReferrals} referral
-              {stats.queuedReferrals !== 1 ? 's' : ''} waiting in queue. They'll
-              be activated when slots become available.
+              {stats.queuedReferrals !== 1 ? 's' : ''} waiting in queue. They
+              will be activated when slots become available.
             </p>
           )}
         </CardContent>

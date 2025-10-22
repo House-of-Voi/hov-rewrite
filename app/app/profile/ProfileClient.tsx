@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSignOut } from '@coinbase/cdp-hooks';
 import Card, { CardContent, CardHeader } from '@/components/Card';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
@@ -31,6 +32,8 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [loadingReferrals, setLoadingReferrals] = useState(true);
 
+  const { signOut } = useSignOut();
+
   const handleSaveProfile = async () => {
     setIsSaving(true);
     setStatus(null);
@@ -56,6 +59,7 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
         });
       }
     } catch (error) {
+      console.error('Failed to update profile:', error);
       setStatus({
         type: 'error',
         message: 'Network error. Please try again.',
@@ -69,6 +73,24 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
     setProfile({ ...profile, avatar_url: url });
     setStatus({ type: 'success', message: 'Avatar uploaded successfully!' });
     setTimeout(() => setStatus(null), 3000);
+  };
+
+  const handleLogout = async () => {
+    try {
+      // First sign out from Coinbase CDP
+      await signOut();
+
+      // Then call our backend logout endpoint to clear session
+      await fetch('/api/auth/logout', { method: 'POST' });
+
+      // Redirect to auth page
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still try to logout from backend even if CDP signout fails
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/auth';
+    }
   };
 
   const handleAvatarUploadError = (error: string) => {
@@ -93,6 +115,7 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
         setStatus({ type: 'error', message: result.error || 'Failed to delete avatar' });
       }
     } catch (error) {
+      console.error('Failed to delete avatar:', error);
       setStatus({ type: 'error', message: 'Network error. Please try again.' });
     }
   };
@@ -379,11 +402,9 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
-            <a href="/api/auth/logout">
-              <Button variant="ghost" size="md">
-                Sign Out
-              </Button>
-            </a>
+            <Button variant="ghost" size="md" onClick={handleLogout}>
+              Sign Out
+            </Button>
             <button className="px-6 py-3 border-2 border-ruby-500/30 text-ruby-400 rounded-xl font-bold uppercase tracking-wide hover:bg-ruby-500/10 transition-colors">
               Delete Account
             </button>

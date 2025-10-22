@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { MimirPlayerStats } from '@/lib/types/database';
-import { formatNumberCompact, formatCurrency, formatVoi } from '@/lib/utils/format';
+import { formatNumberCompact, formatVoi } from '@/lib/utils/format';
 
 interface PlayerStatsCardProps {
   stats: MimirPlayerStats | null;

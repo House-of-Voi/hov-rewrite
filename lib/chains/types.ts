@@ -15,6 +15,6 @@ export interface VerifyInput {
   payload: NoncePayload;
 }
 
-export interface VerifyResult {
-  ok: true; normalizedAddress: string;
-} | { ok: false; error: string; };
+export type VerifyResult =
+  | { ok: true; normalizedAddress: string }
+  | { ok: false; error: string };

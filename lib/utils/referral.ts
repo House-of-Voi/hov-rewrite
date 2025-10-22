@@ -33,10 +33,10 @@ export async function generateUniqueReferralCode(
       .from('profiles')
       .select('id')
       .eq('referral_code', code)
-      .single();
+      .maybeSingle();
 
     // If no data found, code is unique
-    if (!data && !error) {
+    if (!data) {
       return code;
     }
   }
@@ -56,14 +56,15 @@ export function isValidReferralCodeFormat(code: string): boolean {
 
 export function fingerprint(req: Request): string {
   const ua = req.headers.get('user-agent') ?? '';
-  const ip = (req as any).ip ?? '';
+  const ip =
+    'ip' in req ? ((req as Request & { ip?: string }).ip ?? '') : '';
   return hash(`${ua}::${ip}`);
 }
 
 function hash(s: string): string {
-  let h = 0,
-    i = 0,
-    len = s.length;
+  let h = 0;
+  let i = 0;
+  const len = s.length;
   while (i < len) {
     h = ((h << 5) - h + s.charCodeAt(i++)) | 0;
   }

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPlatformStats } from '@/lib/api/statistics';
-import { formatNumberCompact, formatCurrency, formatVoi } from '@/lib/utils/format';
+import { formatNumberCompact } from '@/lib/utils/format';
 
 interface PlatformStatsProps {
   contractId: number;

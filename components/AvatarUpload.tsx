@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, type KeyboardEvent } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import Button from './Button';
 
@@ -140,6 +140,13 @@ export default function AvatarUpload({
     fileInputRef.current?.click();
   };
 
+  const handleDropZoneKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleDropZoneClick();
+    }
+  };
+
   return (
     <div className="space-y-4">
       <input
@@ -157,6 +164,10 @@ export default function AvatarUpload({
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
+          onKeyDown={handleDropZoneKeyDown}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload avatar by clicking or dragging an image"
           className={`
             cursor-pointer border-2 border-dashed rounded-xl p-8 text-center transition-all
             ${

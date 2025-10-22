@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+
 interface AvatarProps {
   src?: string | null;
   alt?: string;
@@ -24,12 +27,23 @@ export default function Avatar({
   editable = false,
   onEditClick,
 }: AvatarProps) {
+  const [imageError, setImageError] = useState(false);
   const sizeClasses = {
     sm: 'w-8 h-8 text-xs',
     md: 'w-12 h-12 text-sm',
     lg: 'w-16 h-16 text-base',
     xl: 'w-32 h-32 text-2xl',
   };
+  const sizeDimensions = {
+    sm: 32,
+    md: 48,
+    lg: 64,
+    xl: 128,
+  };
+
+  useEffect(() => {
+    setImageError(false);
+  }, [src]);
 
   // Generate initials from display name
   const getInitials = (name?: string | null): string => {
@@ -44,11 +58,14 @@ export default function Avatar({
   };
 
   const initials = getInitials(displayName);
+  const showInitials = !src || imageError;
+  const dimension = sizeDimensions[size];
 
   const avatarContent = (
     <div
       className={`
         ${sizeClasses[size]}
+        relative
         rounded-full
         overflow-hidden
         flex
@@ -64,18 +81,18 @@ export default function Avatar({
         ${className}
       `}
     >
-      {src ? (
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            // Hide image on error and show initials instead
-            e.currentTarget.style.display = 'none';
-          }}
-        />
-      ) : (
+      {showInitials ? (
         <span>{initials}</span>
+      ) : (
+        <Image
+          src={src as string}
+          alt={alt}
+          width={dimension}
+          height={dimension}
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+          priority={size === 'xl'}
+        />
       )}
     </div>
   );

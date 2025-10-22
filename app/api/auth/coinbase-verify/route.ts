@@ -12,7 +12,7 @@ const schema = z.object({
   cdpUserId: z.string().optional(),
   email: z.string().optional(),
   walletAddress: z.string().optional(),
-  referralCode: z.string().min(7).max(7).optional(), // Optional for existing users
+  referralCode: z.string().min(7).max(7).optional(), // Optional - can be added later
 });
 
 /**
@@ -64,6 +64,14 @@ export async function POST(req: NextRequest) {
     // Validate the CDP access token directly with Coinbase to fetch the authoritative user record
     const cdpUser = await validateCdpToken(accessToken);
 
+    // If token is expired or invalid, return error
+    if (!cdpUser) {
+      return NextResponse.json(
+        { error: 'Invalid or expired CDP access token. Please reauthenticate.' },
+        { status: 401 }
+      );
+    }
+
     // Warn if the client-supplied identifiers don't match what CDP reports
     if (claimedCdpUserId && claimedCdpUserId !== cdpUser.userId) {
       console.warn(
@@ -103,32 +111,17 @@ export async function POST(req: NextRequest) {
     if (existingProfile) {
       profile = existingProfile;
     } else {
-      // New profile - validate referral code and generate unique code for this user
-      if (!referralCode) {
-        return NextResponse.json(
-          { error: 'Referral code is required for new users' },
-          { status: 400 }
-        );
-      }
-
-      const referralValidation = await validateReferralCode(referralCode);
-      if (!referralValidation.valid || !referralValidation.referrerId) {
-        return NextResponse.json(
-          {
-            error: referralValidation.error || 'Invalid referral code',
-          },
-          { status: 400 }
-        );
-      }
-
-      const newReferralCode = await generateUniqueReferralCode();
+      // New profile - generate unique code and join waitlist
       isNewProfile = true;
+      const newReferralCode = await generateUniqueReferralCode();
 
       const { data: newProfile, error: profileError } = await supabase
         .from('profiles')
         .insert({
           primary_email: identity,
           referral_code: newReferralCode,
+          game_access_granted: false,
+          waitlist_joined_at: new Date().toISOString(),
         })
         .select()
         .single();
@@ -142,19 +135,24 @@ export async function POST(req: NextRequest) {
 
       profile = newProfile;
 
-      // Create referral relationship
-      const { data: canAccept } = await supabase.rpc('can_accept_referral', {
-        p_profile_id: referralValidation.referrerId,
-      });
+      // If referral code provided, create referral relationship
+      if (referralCode) {
+        const referralValidation = await validateReferralCode(referralCode);
+        if (referralValidation.valid && referralValidation.referrerId) {
+          const { data: canAccept } = await supabase.rpc('can_accept_referral', {
+            p_profile_id: referralValidation.referrerId,
+          });
 
-      const isActive = canAccept === true;
+          const isActive = canAccept === true;
 
-      await supabase.from('referrals').insert({
-        referrer_profile_id: referralValidation.referrerId,
-        referred_profile_id: profile.id,
-        is_active: isActive,
-        activated_at: isActive ? new Date().toISOString() : null,
-      });
+          await supabase.from('referrals').insert({
+            referrer_profile_id: referralValidation.referrerId,
+            referred_profile_id: profile.id,
+            is_active: isActive,
+            activated_at: isActive ? new Date().toISOString() : null,
+          });
+        }
+      }
     }
 
     // Step 2: Store Base (EVM) account fetched from CDP
@@ -193,7 +191,8 @@ export async function POST(req: NextRequest) {
       cdp_access_token_hash: createHash('sha256').update(sessionToken).digest('hex'),
       jwt_id: null, // No longer using custom JWTs
       expires_at: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
-      ip: req.ip ?? null,
+      ip: req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+          req.headers.get('x-real-ip') ?? null,
       user_agent: req.headers.get('user-agent') ?? null,
     });
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchLeaderboard } from '@/lib/api/statistics';
 import { formatNumberCompact, formatVoi, formatPercent } from '@/lib/utils/format';
+import type { MimirLeaderboardEntry } from '@/lib/types/database';
 
 interface LeaderboardProps {
   contractId?: number;
@@ -12,6 +13,12 @@ interface LeaderboardProps {
 
 type Timeframe = 'daily' | 'all-time';
 type RankBy = 'won' | 'profit' | 'rtp' | 'volume';
+type LeaderboardEntry = MimirLeaderboardEntry & {
+  display_name: string | null;
+  profile_id: string | null;
+  rank_position?: number;
+  who?: string;
+};
 
 export function Leaderboard({
   contractId,
@@ -21,7 +28,7 @@ export function Leaderboard({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [rankBy, setRankBy] = useState<RankBy>('profit');
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery<LeaderboardEntry[]>({
     queryKey: ['leaderboard', contractId, timeframe, selectedDate.toISOString().split('T')[0], rankBy, limit],
     queryFn: () =>
       fetchLeaderboard({
@@ -135,10 +142,10 @@ export function Leaderboard({
               </tr>
             </thead>
             <tbody>
-              {data.map((entry: any) => {
+              {data.map((entry) => {
                 const profit = BigInt(entry.net_result);
                 const isWinning = profit >= 0n;
-                const identifier = entry.identifier || entry.who;
+                const identifier = entry.identifier || entry.who || 'unknown';
 
                 return (
                   <tr

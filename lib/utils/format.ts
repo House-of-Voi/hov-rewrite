@@ -94,3 +94,13 @@ export function formatVoi(microVoi: number | string, decimals = 2): string {
 
   return voi.toFixed(decimals);
 }
+
+/**
+ * Truncate an address for display (e.g., "VOI1...XYZ")
+ */
+export function truncateAddress(address: string, prefixLength = 6, suffixLength = 4): string {
+  if (!address || address.length <= prefixLength + suffixLength) {
+    return address;
+  }
+  return `${address.slice(0, prefixLength)}...${address.slice(-suffixLength)}`;
+}

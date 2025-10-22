@@ -19,17 +19,17 @@ export class MimirRpcError extends Error {
   public readonly code: string | undefined;
   public readonly originalError: unknown;
 
-  constructor(functionName: string, error: any) {
+  constructor(functionName: string, error: unknown) {
     const message =
       error && typeof error === 'object' && 'message' in error
-        ? String(error.message)
+        ? String((error as { message: unknown }).message)
         : 'Unknown error';
 
     super(`Mimir query failed (${functionName}): ${message}`);
     this.name = 'MimirRpcError';
     this.code =
       error && typeof error === 'object' && 'code' in error
-        ? String(error.code)
+        ? String((error as { code?: unknown }).code)
         : undefined;
     this.originalError = error;
   }

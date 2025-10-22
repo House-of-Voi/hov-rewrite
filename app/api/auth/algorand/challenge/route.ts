@@ -23,7 +23,7 @@ export async function GET() {
       .eq('chain', 'base')
       .maybeSingle();
 
-    let baseAddress = baseAccount?.address?.toLowerCase() ?? session.baseWalletAddress?.toLowerCase() ?? null;
+    const baseAddress = baseAccount?.address?.toLowerCase() ?? session.baseWalletAddress?.toLowerCase() ?? null;
 
     if (!baseAddress) {
       return NextResponse.json(

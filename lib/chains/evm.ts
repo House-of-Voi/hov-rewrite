@@ -5,13 +5,14 @@ export async function verifyEvm({ address, signature, payload }: VerifyInput): P
   try {
     const message = buildMessage(payload);
     const messageHash = hashMessage(message);
-    const recovered = await recoverAddress({ hash: messageHash, signature });
+    const recovered = await recoverAddress({ hash: messageHash, signature: signature as `0x${string}` });
     const matches = isAddress(address) && getAddress(address) === getAddress(recovered);
     return matches
       ? { ok: true, normalizedAddress: getAddress(address) }
       : { ok: false, error: 'Signature mismatch' };
-  } catch (e: any) {
-    return { ok: false, error: e?.message ?? 'Verification failed' };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Verification failed';
+    return { ok: false, error: message };
   }
 }
 

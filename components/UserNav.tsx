@@ -61,9 +61,9 @@ export default function UserNav() {
 
   return (
     <a
-      href="/app/profile"
+      href="/app"
       className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gold-500/10 transition-colors group"
-      title="View Profile"
+      title="View Dashboard"
     >
       <Avatar
         src={profile.avatar_url}
@@ -75,7 +75,7 @@ export default function UserNav() {
         <div className="text-sm font-bold text-gold-400 group-hover:text-gold-300 transition-colors">
           {profile.display_name || 'User'}
         </div>
-        <div className="text-xs text-neutral-500">View Profile</div>
+        <div className="text-xs text-neutral-500">View Dashboard</div>
       </div>
     </a>
   );

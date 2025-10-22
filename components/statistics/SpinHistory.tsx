@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPlayerSpins } from '@/lib/api/statistics';
-import { formatVoi, formatDate, formatPercent } from '@/lib/utils/format';
+import { formatVoi, formatDate } from '@/lib/utils/format';
 
 interface SpinHistoryProps {
   address: string;
@@ -90,6 +90,7 @@ export function SpinHistory({
                   const payout = BigInt(spin.payout);
                   const amount = BigInt(spin.amount);
                   const netResult = payout - amount;
+                  const netResultNum = Number(netResult);
                   const isWin = netResult > 0n;
 
                   return (
@@ -112,7 +113,7 @@ export function SpinHistory({
                         }`}
                       >
                         {isWin ? '+' : ''}
-                        {formatVoi(netResult, 2)} VOI
+                        {formatVoi(netResultNum, 2)} VOI
                       </td>
                       <td className="px-4 py-3 text-right text-neutral-500 text-xs font-mono">
                         #{spin.block}
