@@ -1,19 +1,20 @@
 'use client';
 
+import { useState } from 'react';
 import Modal from './Modal';
 import Button from './Button';
 import CopyButton from './CopyButton';
 import { TicketIcon } from './icons';
 import { formatCurrency } from '@/lib/referrals/credits';
 
-interface Referral {
+interface ReferralCode {
   id: string;
-  referral_code: string;
-  referred_profile_id?: string | null;
-  attributed_at?: string | null;
-  converted_at?: string | null;
-  deactivated_at?: string | null;
-  created_at: string;
+  code: string;
+  referredProfileId: string | null;
+  attributedAt: string | null;
+  convertedAt: string | null;
+  deactivatedAt: string | null;
+  createdAt: string;
 }
 
 interface ReferralDetail {
@@ -28,16 +29,74 @@ interface ReferralDetail {
 interface ReferralModalProps {
   isOpen: boolean;
   onClose: () => void;
-  referrals: Referral[];
+  codes: ReferralCode[];
   referralDetails: Partial<Record<string, ReferralDetail>>;
+  codesAvailable: number;
+  onRefresh: () => void;
 }
 
 export default function ReferralModal({
   isOpen,
   onClose,
-  referrals,
+  codes,
   referralDetails,
+  codesAvailable,
+  onRefresh,
 }: ReferralModalProps) {
+  const [isCreating, setIsCreating] = useState(false);
+  const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
+
+  const handleCreateCode = async () => {
+    setIsCreating(true);
+    try {
+      const response = await fetch('/api/referrals/create', {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to create referral code');
+        return;
+      }
+
+      // Refresh the list
+      onRefresh();
+    } catch (error) {
+      console.error('Error creating code:', error);
+      alert('Failed to create referral code');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleDeactivate = async (codeId: string) => {
+    if (!confirm('Are you sure you want to deactivate this code?')) {
+      return;
+    }
+
+    setDeactivatingId(codeId);
+    try {
+      const response = await fetch('/api/referrals/deactivate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codeId }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to deactivate code');
+        return;
+      }
+
+      // Refresh the list
+      onRefresh();
+    } catch (error) {
+      console.error('Error deactivating code:', error);
+      alert('Failed to deactivate code');
+    } finally {
+      setDeactivatingId(null);
+    }
+  };
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Referral Codes" size="xl">
       <div className="space-y-6">
@@ -49,26 +108,41 @@ export default function ReferralModal({
         </div>
 
         {/* Create Code Button */}
-        <div className="flex justify-end">
-          <Button variant="primary" size="sm">
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-neutral-400">
+            {codesAvailable > 0 ? (
+              <span>
+                You can create <span className="text-gold-400 font-bold">{codesAvailable}</span> more code
+                {codesAvailable !== 1 ? 's' : ''}
+              </span>
+            ) : (
+              <span className="text-ruby-400">You&apos;ve reached your limit of referral codes</span>
+            )}
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleCreateCode}
+            disabled={isCreating || codesAvailable <= 0}
+          >
             <div className="flex items-center gap-2">
               <TicketIcon size={16} />
-              <span>Create New Code</span>
+              <span>{isCreating ? 'Creating...' : 'Create New Code'}</span>
             </div>
           </Button>
         </div>
 
         {/* Referral Codes List */}
         <div className="space-y-4">
-          {referrals.map((referral) => {
-            const details = referralDetails[referral.referral_code];
-            const isConverted = !!referral.referred_profile_id;
-            const isPending = referral.attributed_at && !referral.converted_at;
-            const isUnused = !referral.attributed_at;
+          {codes.map((code) => {
+            const details = referralDetails[code.code];
+            const isConverted = !!code.referredProfileId;
+            const isPending = code.attributedAt && !code.convertedAt;
+            const isUnused = !code.attributedAt;
 
             return (
               <div
-                key={referral.id}
+                key={code.id}
                 className={`p-4 rounded-lg border transition-colors ${
                   isConverted
                     ? 'border-green-500/30 bg-green-500/5'
@@ -86,7 +160,7 @@ export default function ReferralModal({
                       {/* Code Header */}
                       <div className="flex items-center gap-3 mb-2">
                         <span className="font-mono text-lg font-black text-gold-400">
-                          {referral.referral_code}
+                          {code.code}
                         </span>
                         {isConverted && (
                           <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30 uppercase font-bold">
@@ -103,7 +177,7 @@ export default function ReferralModal({
                             Unused
                           </span>
                         )}
-                        {referral.deactivated_at && (
+                        {code.deactivatedAt && (
                           <span className="px-2 py-0.5 bg-ruby-500/20 text-ruby-400 text-xs rounded-full border border-ruby-500/30 uppercase font-bold">
                             Deactivated
                           </span>
@@ -142,20 +216,19 @@ export default function ReferralModal({
                         </div>
                       ) : isPending ? (
                         <div className="text-sm text-neutral-400">
-                          Link clicked {new Date(referral.attributed_at!).toLocaleDateString()} •
-                          Awaiting signup
+                          Link clicked {new Date(code.attributedAt!).toLocaleDateString()} • Awaiting
+                          signup
                         </div>
                       ) : (
                         <div className="text-sm text-neutral-400">
-                          Created {new Date(referral.created_at).toLocaleDateString()} • Not yet
-                          shared
+                          Created {new Date(code.createdAt).toLocaleDateString()} • Not yet shared
                         </div>
                       )}
 
                       {/* Link */}
-                      {!referral.deactivated_at && (
+                      {!code.deactivatedAt && (
                         <div className="mt-3 text-xs font-mono text-neutral-500 bg-neutral-900 px-2 py-1 rounded border border-neutral-800">
-                          {`https://houseofvoi.com/r/${referral.referral_code}`}
+                          {`https://houseofvoi.com/r/${code.code}`}
                         </div>
                       )}
                     </div>
@@ -163,15 +236,21 @@ export default function ReferralModal({
 
                   {/* Actions */}
                   <div className="flex flex-col gap-2">
-                    {!referral.deactivated_at && (
+                    {!code.deactivatedAt && (
                       <>
                         <CopyButton
-                          text={`https://houseofvoi.com/r/${referral.referral_code}`}
+                          text={`https://houseofvoi.com/r/${code.code}`}
                           label="Copy"
                         />
-                        <button className="px-3 py-1.5 text-xs text-ruby-400 border border-ruby-500/30 rounded hover:bg-ruby-500/10 transition-colors">
-                          Deactivate
-                        </button>
+                        {!isConverted && (
+                          <button
+                            onClick={() => handleDeactivate(code.id)}
+                            disabled={deactivatingId === code.id}
+                            className="px-3 py-1.5 text-xs text-ruby-400 border border-ruby-500/30 rounded hover:bg-ruby-500/10 transition-colors disabled:opacity-50"
+                          >
+                            {deactivatingId === code.id ? 'Deactivating...' : 'Deactivate'}
+                          </button>
+                        )}
                       </>
                     )}
                   </div>

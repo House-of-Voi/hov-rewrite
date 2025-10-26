@@ -4,7 +4,6 @@ import { createHash, randomUUID } from 'crypto';
 import { createAdminClient } from '@/lib/db/supabaseAdmin';
 import { setSessionCookie } from '@/lib/auth/cookies';
 import { validateCdpToken } from '@/lib/auth/cdp-validation';
-import { generateUniqueReferralCode } from '@/lib/utils/referral';
 import { validateReferralCode } from '@/lib/referrals/validation';
 
 const schema = z.object({
@@ -93,42 +92,68 @@ export async function POST(req: NextRequest) {
     const supabase = createAdminClient();
 
     // Determine the identity string we will store for the profile
-    const identity =
-      cdpUser.email ||
-      cdpUser.phoneNumber ||
-      `${cdpUser.userId}@cdp.houseofvoi.com`;
+    const fallbackIdentity = `${cdpUser.userId}@cdp.houseofvoi.com`;
+    const normalizedEmail =
+      typeof cdpUser.email === 'string' && cdpUser.email.trim().length > 0
+        ? cdpUser.email.trim().toLowerCase()
+        : undefined;
+    const normalizedPhone =
+      typeof cdpUser.phoneNumber === 'string' && cdpUser.phoneNumber.trim().length > 0
+        ? cdpUser.phoneNumber.trim()
+        : undefined;
 
-    // Check if profile exists
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('id, referral_code')
-      .eq('primary_email', identity)
-      .single();
+    const fetchProfileByIdentifier = async (identifier?: string) => {
+      if (!identifier) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, primary_email')
+        .eq('primary_email', identifier)
+        .maybeSingle();
+      return data ?? null;
+    };
 
-    let profile;
+    let profile =
+      (await fetchProfileByIdentifier(normalizedEmail)) ??
+      (await fetchProfileByIdentifier(normalizedPhone)) ??
+      (await fetchProfileByIdentifier(fallbackIdentity));
+
     let isNewProfile = false;
 
-    if (existingProfile) {
-      profile = existingProfile;
+    if (profile) {
+      // Backfill the real email if we previously stored a placeholder
+      if (normalizedEmail && profile.primary_email !== normalizedEmail) {
+        const { data: updatedProfile, error: updateError } = await supabase
+          .from('profiles')
+          .update({ primary_email: normalizedEmail })
+          .eq('id', profile.id)
+          .select('id, primary_email')
+          .single();
+
+        if (updateError) {
+          console.warn('Failed to backfill profile email', updateError);
+        } else if (updatedProfile) {
+          profile = updatedProfile;
+        }
+      }
     } else {
-      // New profile - generate unique code and join waitlist
+      const identity = normalizedEmail ?? normalizedPhone ?? fallbackIdentity;
+      // New profile - join waitlist
       isNewProfile = true;
-      const newReferralCode = await generateUniqueReferralCode();
 
       const { data: newProfile, error: profileError } = await supabase
         .from('profiles')
         .insert({
           primary_email: identity,
-          referral_code: newReferralCode,
           game_access_granted: false,
           waitlist_joined_at: new Date().toISOString(),
         })
-        .select()
+        .select('id, primary_email')
         .single();
 
       if (profileError || !newProfile) {
+        console.error('Profile creation error:', profileError);
         return NextResponse.json(
-          { error: 'Failed to create profile' },
+          { error: `Failed to create profile: ${profileError?.message || 'Unknown error'}` },
           { status: 500 }
         );
       }
@@ -138,18 +163,35 @@ export async function POST(req: NextRequest) {
       // If referral code provided, create referral relationship
       if (referralCode) {
         const referralValidation = await validateReferralCode(referralCode);
-        if (referralValidation.valid && referralValidation.referrerId) {
+        if (
+          referralValidation.valid &&
+          referralValidation.referrerId &&
+          referralValidation.codeId
+        ) {
           const { data: canAccept } = await supabase.rpc('can_accept_referral', {
             p_profile_id: referralValidation.referrerId,
           });
 
           const isActive = canAccept === true;
+          const now = new Date().toISOString();
 
+          // Update the referral code to mark it as converted
+          await supabase
+            .from('referral_codes')
+            .update({
+              referred_profile_id: profile.id,
+              converted_at: now,
+              attributed_at: now,
+            })
+            .eq('id', referralValidation.codeId);
+
+          // Create the referral relationship
           await supabase.from('referrals').insert({
             referrer_profile_id: referralValidation.referrerId,
             referred_profile_id: profile.id,
+            referral_code_id: referralValidation.codeId,
             is_active: isActive,
-            activated_at: isActive ? new Date().toISOString() : null,
+            activated_at: isActive ? now : null,
           });
         }
       }

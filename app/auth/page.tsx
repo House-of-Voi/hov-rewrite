@@ -353,6 +353,12 @@ export default function AuthPage() {
       }
 
       setStatus('Success! Redirecting to your dashboard...');
+
+      // Emit login success event for UserNav to refresh
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('hov:login-success'));
+      }
+
       await new Promise(resolve => setTimeout(resolve, 1000));
       router.push('/app');
     } catch (error) {

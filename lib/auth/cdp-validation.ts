@@ -51,19 +51,22 @@ function extractAuthFromMethods(methods: unknown): {
 
   for (const method of methods) {
     if (!method || typeof method !== 'object') continue;
-    const type = (method as { type?: string }).type;
-    if (type === 'email' && typeof (method as { email?: string }).email === 'string') {
-      return { email: (method as { email: string }).email, authMethod: 'email' };
+    const { type } = method as { type?: string };
+
+    if (typeof (method as { email?: unknown }).email === 'string') {
+      const email = (method as { email: string }).email;
+      const authMethod: 'email' | 'phone' | 'social' =
+        type === 'jwt' ? 'social' : 'email';
+      return { email, authMethod };
     }
-    if (
-      type === 'sms' &&
-      typeof (method as { phoneNumber?: string }).phoneNumber === 'string'
-    ) {
-      return {
-        phoneNumber: (method as { phoneNumber: string }).phoneNumber,
-        authMethod: 'phone',
-      };
+
+    if (typeof (method as { phoneNumber?: unknown }).phoneNumber === 'string') {
+      const phoneNumber = (method as { phoneNumber: string }).phoneNumber;
+      const authMethod: 'email' | 'phone' | 'social' =
+        type === 'jwt' ? 'social' : 'phone';
+      return { phoneNumber, authMethod };
     }
+
     if (type === 'jwt') {
       return { authMethod: 'social' };
     }
@@ -84,7 +87,7 @@ function normalizeEndUserResponse(endUser: unknown): CdpEndUser {
 
   const evmAccounts = (endUser as { evmAccounts?: string[] }).evmAccounts ?? [];
 
-  const { email, phoneNumber, authMethod } = extractAuthFromMethods(
+  const { email: methodEmail, phoneNumber: methodPhone, authMethod } = extractAuthFromMethods(
     (endUser as { authenticationMethods?: unknown }).authenticationMethods
   );
 
@@ -97,10 +100,31 @@ function normalizeEndUserResponse(endUser: unknown): CdpEndUser {
   }
   const walletAddress = walletAddressSource.toLowerCase();
 
+  const topLevelEmail =
+    typeof (endUser as { email?: unknown }).email === 'string'
+      ? ((endUser as { email: string }).email ?? undefined)
+      : undefined;
+  const topLevelPhone =
+    typeof (endUser as { phoneNumber?: unknown }).phoneNumber === 'string'
+      ? ((endUser as { phoneNumber: string }).phoneNumber ?? undefined)
+      : undefined;
+
+  const rawEmail = methodEmail ?? topLevelEmail;
+  const rawPhone = methodPhone ?? topLevelPhone;
+
+  const normalizedEmail =
+    typeof rawEmail === 'string' && rawEmail.trim().length > 0
+      ? rawEmail.trim().toLowerCase()
+      : undefined;
+  const normalizedPhone =
+    typeof rawPhone === 'string' && rawPhone.trim().length > 0
+      ? rawPhone.trim()
+      : undefined;
+
   return {
     userId,
-    email,
-    phoneNumber,
+    email: normalizedEmail,
+    phoneNumber: normalizedPhone,
     walletAddress,
     authMethod,
   };
@@ -116,22 +140,52 @@ function normalizeEndUserResponse(endUser: unknown): CdpEndUser {
  * 3. Associated with a valid end user
  *
  * @param accessToken - The CDP access token from the client
+ * @param options - Validation options (timeout, retry)
  * @returns CdpEndUser information if valid
  * @throws Error if token is invalid, expired, or validation fails
  */
 export async function validateCdpAccessToken(
-  accessToken: string
+  accessToken: string,
+  options?: { timeout?: number; retries?: number }
 ): Promise<CdpEndUser> {
-  try {
-    const client = getCdpClient();
-    const endUser = await client.endUser.validateAccessToken({ accessToken });
-    return normalizeEndUserResponse(endUser);
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
+  const timeout = options?.timeout ?? 5000; // 5 second default timeout
+  const retries = options?.retries ?? 0; // No retries by default
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const client = getCdpClient();
+
+      // Create a timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('CDP validation timeout')), timeout);
+      });
+
+      // Race between validation and timeout
+      const validationPromise = client.endUser.validateAccessToken({ accessToken });
+      const endUser = await Promise.race([validationPromise, timeoutPromise]);
+
+      return normalizeEndUserResponse(endUser);
+    } catch (error) {
+      const isLastAttempt = attempt === retries;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      // Log retry attempts
+      if (!isLastAttempt) {
+        console.warn(`CDP validation attempt ${attempt + 1} failed: ${errorMessage}. Retrying...`);
+        // Wait briefly before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
+        continue;
+      }
+
+      // On final attempt, throw the error
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Unknown error during CDP token validation');
     }
-    throw new Error('Unknown error during CDP token validation');
   }
+
+  throw new Error('CDP validation failed after all retries');
 }
 
 /**
@@ -205,13 +259,17 @@ function isTokenExpiredError(error: unknown): boolean {
  * We try JWKS validation first, then fall back to API validation if needed.
  *
  * @param accessToken - The CDP access token
+ * @param options - Validation options (timeout, retries)
  * @returns CdpEndUser information, or null if token is expired
  * @throws Error if token validation fails for other reasons
  */
-export async function validateCdpToken(accessToken: string): Promise<CdpEndUser | null> {
+export async function validateCdpToken(
+  accessToken: string,
+  options?: { timeout?: number; retries?: number }
+): Promise<CdpEndUser | null> {
   // Prefer the official API validation (requires CDP API key and ensures latest claims)
   try {
-    return await validateCdpAccessToken(accessToken);
+    return await validateCdpAccessToken(accessToken, options);
   } catch (apiError) {
     // If API validation failed due to expired token, don't bother with JWKS
     if (isTokenExpiredError(apiError)) {
@@ -219,7 +277,19 @@ export async function validateCdpToken(accessToken: string): Promise<CdpEndUser 
       return null;
     }
 
-    console.warn('CDP API validation failed, trying JWKS validation:', apiError);
+    const apiMessage = apiError instanceof Error ? apiError.message : 'Unknown error';
+
+    // Only try JWKS fallback if API call itself failed (not auth failure)
+    const isNetworkError = apiMessage.includes('timeout') ||
+                          apiMessage.includes('network') ||
+                          apiMessage.includes('fetch');
+
+    if (!isNetworkError) {
+      console.warn('CDP API validation failed with non-network error:', apiMessage);
+      return null;
+    }
+
+    console.warn('CDP API validation timed out, trying JWKS validation');
 
     // Fallback to JWKS validation (works for JWT-form tokens without API access)
     try {
@@ -234,8 +304,6 @@ export async function validateCdpToken(accessToken: string): Promise<CdpEndUser 
       // Both methods failed
       const jwksMessage =
         jwksError instanceof Error ? jwksError.message : 'Unknown JWKS validation error';
-      const apiMessage =
-        apiError instanceof Error ? apiError.message : 'Unknown API validation error';
 
       throw new Error(
         `CDP token validation failed. API error: ${apiMessage}. JWKS error: ${jwksMessage}`

@@ -16,12 +16,24 @@ interface DashboardClientProps {
   initialData: ProfileWithAccounts;
 }
 
+interface ReferralCodeInfo {
+  id: string;
+  code: string;
+  referredProfileId: string | null;
+  attributedAt: string | null;
+  convertedAt: string | null;
+  deactivatedAt: string | null;
+  createdAt: string;
+}
+
 interface ReferralStats {
-  referralCode: string;
-  activeReferrals: number;
+  codesGenerated: number;
+  codesAvailable: number;
   maxReferrals: number;
+  activeReferrals: number;
   queuedReferrals: number;
   totalReferrals: number;
+  codes: ReferralCodeInfo[];
 }
 
 export default function DashboardClient({ initialData }: DashboardClientProps) {
@@ -31,6 +43,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [loadingReferrals, setLoadingReferrals] = useState(true);
+  const [hasPromptedForDisplayName, setHasPromptedForDisplayName] = useState(false);
 
   const { signOut } = useSignOut();
 
@@ -109,14 +122,6 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
     }
   };
 
-  const handleCopyReferralCode = () => {
-    if (!referralStats) return;
-    const url = `${window.location.origin}/r/${referralStats.referralCode}`;
-    navigator.clipboard.writeText(url);
-    setStatus({ type: 'success', message: 'Referral link copied to clipboard!' });
-    setTimeout(() => setStatus(null), 2000);
-  };
-
   // Fetch referral stats on mount
   useEffect(() => {
     async function fetchReferralStats() {
@@ -126,11 +131,13 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
         if (data.ok) {
           setReferralStats({
-            referralCode: data.referralCode,
-            activeReferrals: data.activeReferrals,
+            codesGenerated: data.codesGenerated,
+            codesAvailable: data.codesAvailable,
             maxReferrals: data.maxReferrals,
+            activeReferrals: data.activeReferrals,
             queuedReferrals: data.queuedReferrals,
             totalReferrals: data.totalReferrals,
+            codes: data.codes,
           });
         }
       } catch (err) {
@@ -143,13 +150,28 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
     fetchReferralStats();
   }, []);
 
+  useEffect(() => {
+    const nameMissing =
+      !profile.display_name || (typeof profile.display_name === 'string' && profile.display_name.trim().length === 0);
+
+    if (!hasPromptedForDisplayName && nameMissing) {
+      setIsProfileEditModalOpen(true);
+      setHasPromptedForDisplayName(true);
+    }
+  }, [profile.display_name, hasPromptedForDisplayName]);
+
   return (
     <div className="space-y-8 max-w-4xl">
-      <div>
-        <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">Dashboard</h1>
-        <p className="text-neutral-400 mt-2">
-          Welcome back! Manage your profile, wallets, and referrals.
-        </p>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">Dashboard</h1>
+          <p className="text-neutral-400 mt-2">
+            Welcome back! Manage your profile, wallets, and referrals.
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={handleLogout}>
+          Sign Out
+        </Button>
       </div>
 
       {/* Status Message */}
@@ -186,7 +208,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-3xl font-black text-gold-400 uppercase">
-                    {profile.display_name || 'No name set'}
+                    {profile.display_name || 'Set your name'}
                   </h2>
                   <p className="text-neutral-400 text-sm mt-1">{profile.primary_email}</p>
                   
@@ -259,23 +281,28 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
       {/* Referral Section */}
       <Card id="referrals">
         <CardHeader>
-          <h2 className="text-2xl font-bold text-gold-400 uppercase">Your Referral Code</h2>
+          <h2 className="text-2xl font-bold text-gold-400 uppercase">Your Referral Codes</h2>
         </CardHeader>
         <CardContent>
           {loadingReferrals ? (
             <p className="text-neutral-400">Loading referral information...</p>
           ) : referralStats ? (
             <div className="space-y-6">
-              {/* Referral Code Display */}
+              {/* Referral Codes Summary */}
               <div className="text-center p-6 bg-gradient-to-r from-blue-600/10 to-purple-600/10 border-2 border-blue-500/30 rounded-xl">
-                <p className="text-neutral-400 text-sm mb-2">Your Unique Referral Code</p>
-                <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-                  <span className="text-3xl font-black text-white font-mono tracking-wider">
-                    {referralStats.referralCode}
+                <p className="text-neutral-400 text-sm mb-2">Generated Codes</p>
+                <div className="flex justify-center items-baseline gap-2">
+                  <span className="text-3xl font-black text-gold-400">
+                    {referralStats.codesGenerated}
                   </span>
+                  <span className="text-xl text-neutral-400">/ {referralStats.maxReferrals}</span>
                 </div>
-                <p className="text-neutral-500 text-xs mt-3 font-mono">
-                  {window.location.origin}/r/{referralStats.referralCode}
+                <p className="text-neutral-500 text-xs mt-3">
+                  {referralStats.codesAvailable > 0 ? (
+                    <>You can create {referralStats.codesAvailable} more code{referralStats.codesAvailable !== 1 ? 's' : ''}</>
+                  ) : (
+                    <>All referral slots used</>
+                  )}
                 </p>
               </div>
 
@@ -326,21 +353,13 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3">
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={handleCopyReferralCode}
-                  className="flex-1"
-                >
-                  <div className="flex items-center gap-2 justify-center">
-                    <TicketIcon size={20} />
-                    <span>Copy Referral Link</span>
-                  </div>
-                </Button>
-                <a href="/app/referrals" className="flex-1">
-                  <Button variant="secondary" size="md" className="w-full">
-                    View Full Details
+              <div className="flex justify-center">
+                <a href="/app/referrals">
+                  <Button variant="primary" size="md" className="px-8">
+                    <div className="flex items-center gap-2 justify-center">
+                      <TicketIcon size={20} />
+                      <span>Manage Referral Codes</span>
+                    </div>
                   </Button>
                 </a>
               </div>
@@ -357,10 +376,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           <h2 className="text-2xl font-bold text-gold-400 uppercase">Account Actions</h2>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-3">
-            <Button variant="ghost" size="md" onClick={handleLogout}>
-              Sign Out
-            </Button>
+          <div className="flex justify-end">
             <button className="px-6 py-3 border-2 border-ruby-500/30 text-ruby-400 rounded-xl font-bold uppercase tracking-wide hover:bg-ruby-500/10 transition-colors">
               Delete Account
             </button>

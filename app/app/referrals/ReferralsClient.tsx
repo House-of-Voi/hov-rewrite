@@ -3,13 +3,27 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Card, { CardContent } from '@/components/Card';
 import Button from '@/components/Button';
+import CopyButton from '@/components/CopyButton';
+import { TicketIcon } from '@/components/icons';
+
+interface ReferralCodeInfo {
+  id: string;
+  code: string;
+  referredProfileId: string | null;
+  attributedAt: string | null;
+  convertedAt: string | null;
+  deactivatedAt: string | null;
+  createdAt: string;
+}
 
 interface ReferralStats {
-  referralCode: string;
-  activeReferrals: number;
+  codesGenerated: number;
+  codesAvailable: number;
   maxReferrals: number;
+  activeReferrals: number;
   queuedReferrals: number;
   totalReferrals: number;
+  codes: ReferralCodeInfo[];
 }
 
 export default function ReferralsClient() {
@@ -17,60 +31,89 @@ export default function ReferralsClient() {
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const response = await fetch('/api/referrals/info');
-        const data = await response.json();
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/referrals/info');
+      const data = await response.json();
 
-        if (data.ok) {
-          setStats({
-            referralCode: data.referralCode,
-            activeReferrals: data.activeReferrals,
-            maxReferrals: data.maxReferrals,
-            queuedReferrals: data.queuedReferrals,
-            totalReferrals: data.totalReferrals,
-          });
-        } else {
-          setError(data.error || 'Failed to load referral stats');
-        }
-      } catch (error) {
-        console.error('Failed to load referral stats:', error);
-        setError('Failed to load referral stats');
-      } finally {
-        setLoading(false);
+      if (data.ok) {
+        setStats({
+          codesGenerated: data.codesGenerated,
+          codesAvailable: data.codesAvailable,
+          maxReferrals: data.maxReferrals,
+          activeReferrals: data.activeReferrals,
+          queuedReferrals: data.queuedReferrals,
+          totalReferrals: data.totalReferrals,
+          codes: data.codes,
+        });
+      } else {
+        setError(data.error || 'Failed to load referral stats');
       }
+    } catch (error) {
+      console.error('Failed to load referral stats:', error);
+      setError('Failed to load referral stats');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateCode = async () => {
+    setIsCreating(true);
+    try {
+      const response = await fetch('/api/referrals/create', {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to create referral code');
+        return;
+      }
+
+      fetchStats();
+    } catch (error) {
+      console.error('Error creating code:', error);
+      alert('Failed to create referral code');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleDeactivate = async (codeId: string) => {
+    if (!confirm('Are you sure you want to deactivate this code?')) {
+      return;
     }
 
+    setDeactivatingId(codeId);
+    try {
+      const response = await fetch('/api/referrals/deactivate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codeId }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to deactivate code');
+        return;
+      }
+
+      fetchStats();
+    } catch (error) {
+      console.error('Error deactivating code:', error);
+      alert('Failed to deactivate code');
+    } finally {
+      setDeactivatingId(null);
+    }
+  };
+
+  useEffect(() => {
     fetchStats();
   }, []);
 
-  const copyReferralCode = async () => {
-    if (!stats) return;
-
-    try {
-      const url = `${window.location.origin}/r/${stats.referralCode}`;
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  const copyCodeOnly = async () => {
-    if (!stats) return;
-
-    try {
-      await navigator.clipboard.writeText(stats.referralCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
 
   if (loading) {
     return (
@@ -99,7 +142,6 @@ export default function ReferralsClient() {
   }
 
   const slotsRemaining = stats.maxReferrals - stats.activeReferrals;
-  const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/r/${stats.referralCode}`;
 
   return (
     <div className="space-y-8">
@@ -118,48 +160,139 @@ export default function ReferralsClient() {
             Referrals
           </h1>
           <p className="text-neutral-400 text-lg mt-2">
-            Share your code and grow the House of Voi community
+            Create unique codes for each person you invite
           </p>
         </div>
         <div className="w-24"></div> {/* Spacer for centering */}
       </div>
 
-      {/* Referral Code Card */}
+      {/* Create New Code Section */}
       <Card glow>
-        <CardContent className="space-y-6">
-          <div className="text-center">
-            <p className="text-neutral-400 text-sm mb-2">Your Referral Code</p>
-            <div className="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-              <span className="text-4xl font-black text-white font-mono tracking-wider">
-                {stats.referralCode}
-              </span>
+        <CardContent className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-neutral-400 text-sm">Your Referral Codes</p>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-3xl font-black text-gold-400">
+                  {stats.codesGenerated}
+                </span>
+                <span className="text-xl text-neutral-400">/ {stats.maxReferrals}</span>
+              </div>
+              <p className="text-neutral-500 text-xs mt-1">
+                {stats.codesAvailable > 0 ? (
+                  <>You can create {stats.codesAvailable} more code{stats.codesAvailable !== 1 ? 's' : ''}</>
+                ) : (
+                  <>You&apos;ve reached your limit</>
+                )}
+              </p>
             </div>
-          </div>
-
-          <div className="flex gap-3">
             <Button
-              variant="secondary"
+              variant="primary"
               size="md"
-              onClick={copyReferralCode}
-              className="flex-1"
+              onClick={handleCreateCode}
+              disabled={isCreating || stats.codesAvailable <= 0}
+              className="px-6"
             >
-              {copied ? '✓ Copied!' : 'Copy Referral Link'}
+              <div className="flex items-center gap-2">
+                <TicketIcon size={20} />
+                <span>{isCreating ? 'Creating...' : 'Create New Code'}</span>
+              </div>
             </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={copyCodeOnly}
-              className="flex-1"
-            >
-              Copy Code Only
-            </Button>
-          </div>
-
-          <div className="text-center text-sm text-neutral-500">
-            <p className="font-mono break-all">{referralUrl}</p>
           </div>
         </CardContent>
       </Card>
+
+      {/* Referral Codes List */}
+      {stats.codes.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-gold-400">Your Codes</h2>
+          {stats.codes.map((code) => {
+            const isConverted = !!code.referredProfileId;
+            const isPending = code.attributedAt && !code.convertedAt;
+            const isUnused = !code.attributedAt;
+            const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/r/${code.code}`;
+
+            return (
+              <Card key={code.id}>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="font-mono text-2xl font-black text-gold-400">
+                          {code.code}
+                        </span>
+                        {isConverted && (
+                          <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30 uppercase font-bold">
+                            Active
+                          </span>
+                        )}
+                        {isPending && (
+                          <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full border border-yellow-500/30 uppercase font-bold">
+                            Pending
+                          </span>
+                        )}
+                        {isUnused && (
+                          <span className="px-2 py-0.5 bg-neutral-700/50 text-neutral-400 text-xs rounded-full border border-neutral-600 uppercase font-bold">
+                            Unused
+                          </span>
+                        )}
+                        {code.deactivatedAt && (
+                          <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full border border-red-500/30 uppercase font-bold">
+                            Deactivated
+                          </span>
+                        )}
+                      </div>
+
+                      {isConverted ? (
+                        <p className="text-sm text-neutral-400">
+                          Converted {new Date(code.convertedAt!).toLocaleDateString()}
+                        </p>
+                      ) : isPending ? (
+                        <p className="text-sm text-neutral-400">
+                          Link clicked {new Date(code.attributedAt!).toLocaleDateString()} • Awaiting signup
+                        </p>
+                      ) : code.deactivatedAt ? (
+                        <p className="text-sm text-neutral-400">
+                          Deactivated {new Date(code.deactivatedAt).toLocaleDateString()}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-neutral-400">
+                          Created {new Date(code.createdAt).toLocaleDateString()} • Not yet shared
+                        </p>
+                      )}
+
+                      {!code.deactivatedAt && (
+                        <div className="mt-3 text-xs font-mono text-neutral-500 bg-neutral-900 px-3 py-2 rounded border border-neutral-800">
+                          {referralUrl}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      {!code.deactivatedAt && (
+                        <>
+                          <CopyButton text={referralUrl} label="Copy Link" />
+                          {!isConverted && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeactivate(code.id)}
+                              disabled={deactivatingId === code.id}
+                              className="text-red-400 border-red-500/30 hover:bg-red-500/10"
+                            >
+                              {deactivatingId === code.id ? 'Deactivating...' : 'Deactivate'}
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid md:grid-cols-3 gap-6">
@@ -238,24 +371,30 @@ export default function ReferralsClient() {
             <li className="flex items-start gap-2">
               <span className="text-gold-400 mt-1">•</span>
               <span>
-                Share your unique referral code or link with friends
+                Create unique one-time-use codes for each person you want to invite
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-gold-400 mt-1">•</span>
               <span>
-                Each user can refer up to {stats.maxReferrals} active members
+                You can generate up to {stats.maxReferrals} codes total
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-gold-400 mt-1">•</span>
               <span>
-                Additional referrals join a queue and activate when slots open
+                Each code can only be used by one person
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-gold-400 mt-1">•</span>
-              <span>Earn rewards when your referrals play games</span>
+              <span>
+                You can have up to {stats.maxReferrals} active referrals - additional signups join a queue
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-gold-400 mt-1">•</span>
+              <span>Earn 0.5% of your referrals&apos; wagers as free credits</span>
             </li>
           </ul>
         </CardContent>

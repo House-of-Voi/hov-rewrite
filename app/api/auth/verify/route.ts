@@ -6,7 +6,6 @@ import { setSessionCookie } from '@/lib/auth/cookies';
 import { DEMO_MODE } from '@/lib/utils/env';
 import { createDemoSession } from '@/lib/demo/session';
 import { createHash, randomUUID } from 'crypto';
-import { generateUniqueReferralCode } from '@/lib/utils/referral';
 import { validateReferralCode } from '@/lib/referrals/validation';
 
 const schema = z.object({
@@ -61,7 +60,7 @@ export async function POST(req: NextRequest) {
   // Check if profile exists
   const { data: existingProfile } = await supabase
     .from('profiles')
-    .select('id, referral_code')
+    .select('id')
     .eq('primary_email', email)
     .single();
 
@@ -71,15 +70,13 @@ export async function POST(req: NextRequest) {
   if (existingProfile) {
     profile = existingProfile;
   } else {
-    // New profile - generate unique referral code and join waitlist
-    const newReferralCode = await generateUniqueReferralCode();
+    // New profile - join waitlist
     isNewProfile = true;
 
     const { data: newProfile, error: profileError } = await supabase
       .from('profiles')
       .insert({
         primary_email: email,
-        referral_code: newReferralCode,
         game_access_granted: false,
         waitlist_joined_at: new Date().toISOString(),
       })
@@ -87,8 +84,9 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (profileError || !newProfile) {
+      console.error('Profile creation error:', profileError);
       return NextResponse.json(
-        { error: 'Failed to create profile' },
+        { error: `Failed to create profile: ${profileError?.message || 'Unknown error'}` },
         { status: 500 }
       );
     }
@@ -111,19 +109,44 @@ export async function POST(req: NextRequest) {
   // Create referral relationship if this is a new profile and referral code provided
   if (isNewProfile && referralCode) {
     const referralValidation = await validateReferralCode(referralCode);
-    if (referralValidation.valid && referralValidation.referrerId) {
+    if (
+      referralValidation.valid &&
+      referralValidation.referrerId &&
+      referralValidation.codeId
+    ) {
       // Check if referrer can accept active referrals
       const { data: canAccept } = await supabase.rpc('can_accept_referral', {
         p_profile_id: referralValidation.referrerId,
       });
 
       const isActive = canAccept === true;
+      const now = new Date().toISOString();
 
+      // Get the current code to check if attributed_at is already set
+      const { data: currentCode } = await supabase
+        .from('referral_codes')
+        .select('attributed_at')
+        .eq('id', referralValidation.codeId)
+        .single();
+
+      // Update the referral code to mark it as converted
+      await supabase
+        .from('referral_codes')
+        .update({
+          referred_profile_id: profile.id,
+          converted_at: now,
+          // Set attributed_at if not already set (from landing page visit)
+          attributed_at: currentCode?.attributed_at || now,
+        })
+        .eq('id', referralValidation.codeId);
+
+      // Create the referral relationship
       await supabase.from('referrals').insert({
         referrer_profile_id: referralValidation.referrerId,
         referred_profile_id: profile.id,
+        referral_code_id: referralValidation.codeId,
         is_active: isActive,
-        activated_at: isActive ? new Date().toISOString() : null,
+        activated_at: isActive ? now : null,
       });
     }
   }

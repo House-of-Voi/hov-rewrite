@@ -10,18 +10,23 @@ interface Profile {
   primary_email: string;
 }
 
+interface UserNavProps {
+  initialProfile?: Profile | null;
+}
+
 /**
  * User navigation component with avatar
  *
  * Displays user avatar and name in the header navigation.
  * Shows when user is authenticated.
  */
-export default function UserNav() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export default function UserNav({ initialProfile = null }: UserNavProps) {
+  const [profile, setProfile] = useState<Profile | null>(initialProfile);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch('/api/profile/me');
         if (response.ok) {
@@ -37,24 +42,22 @@ export default function UserNav() {
       }
     };
 
-    fetchProfile();
+    // Listen for login success events to refresh profile
+    const handleLoginSuccess = () => {
+      fetchProfile();
+    };
+
+    window.addEventListener('hov:login-success', handleLoginSuccess);
+    return () => window.removeEventListener('hov:login-success', handleLoginSuccess);
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-3 px-4 py-2">
-        <div className="w-10 h-10 rounded-full bg-neutral-800 animate-pulse" />
-      </div>
-    );
-  }
-
-  if (!profile) {
+  if (isLoading || !profile) {
     return (
       <a
         href="/auth"
         className="ml-3 px-6 py-2.5 text-sm font-black bg-gradient-to-r from-gold-500 to-gold-600 text-neutral-950 hover:from-gold-400 hover:to-gold-500 rounded-lg transition-all shadow-lg shadow-gold-950/50 tracking-wide uppercase"
       >
-        Connect
+        Login
       </a>
     );
   }

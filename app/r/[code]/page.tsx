@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { validateReferralCode } from '@/lib/referrals/validation';
 import { notFound } from 'next/navigation';
+import { createAdminClient } from '@/lib/db/supabaseAdmin';
 
 export default async function ReferralPage({
   params,
@@ -26,6 +27,18 @@ export default async function ReferralPage({
     path: '/',
     maxAge: 60 * 60 * 24 * 30,
   });
+
+  // Update attributed_at timestamp if this is the first time the link was clicked
+  if (validation.codeId) {
+    const supabase = createAdminClient();
+    await supabase
+      .from('referral_codes')
+      .update({
+        attributed_at: new Date().toISOString(),
+      })
+      .eq('id', validation.codeId)
+      .is('attributed_at', null); // Only update if not already set
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 py-8">

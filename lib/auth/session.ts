@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import { SESSION_COOKIE } from './cookies';
 import { createAdminClient } from '../db/supabaseAdmin';
-import { validateCdpToken } from './cdp-validation';
 
 /**
  * Session information for the authenticated user
@@ -21,26 +20,25 @@ export async function getServerSessionFromRequest(): Promise<SessionInfo | null>
   if (!token) return null;
 
   try {
-    // Validate the CDP access token
-    const cdpUser = await validateCdpToken(token);
-
-    // If token is expired or invalid, return null (will trigger re-auth)
-    if (!cdpUser) {
-      return null;
-    }
-
-    // Look up the profile associated with this CDP user
     const supabase = createAdminClient();
-    const { data: session } = await supabase
+    const { createHash } = await import('crypto');
+
+    // Hash the token to look up the session
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    // Look up session by token hash instead of calling CDP API
+    const { data: session, error: sessionError } = await supabase
       .from('sessions')
-      .select('profile_id, cdp_user_id')
-      .eq('cdp_user_id', cdpUser.userId)
+      .select('id, profile_id, cdp_user_id, expires_at')
+      .eq('cdp_access_token_hash', tokenHash)
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
 
-    if (!session) {
+    // If no valid session found in database, return null
+    if (sessionError || !session) {
+      console.log('No valid session found for token hash');
       return null;
     }
 
@@ -51,11 +49,19 @@ export async function getServerSessionFromRequest(): Promise<SessionInfo | null>
       .eq('id', session.profile_id)
       .single();
 
+    // Get the Base wallet address from accounts table
+    const { data: baseAccount } = await supabase
+      .from('accounts')
+      .select('address')
+      .eq('profile_id', session.profile_id)
+      .eq('chain', 'base')
+      .single();
+
     return {
       sub: session.profile_id,
       profileId: session.profile_id,
       cdpUserId: session.cdp_user_id,
-      baseWalletAddress: cdpUser.walletAddress,
+      baseWalletAddress: baseAccount?.address,
       gameAccessGranted: profile?.game_access_granted || false,
     };
   } catch (error) {
