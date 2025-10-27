@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/db/supabaseAdmin';
-import type { ApiResponse, SlotMachineConfig } from '@/lib/types/admin';
+import type { ApiResponse } from '@/lib/types/admin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       { success: true, data: publicConfigs },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in public slot configs API:', error);
     return NextResponse.json<ApiResponse>(
       { success: false, error: 'Internal server error' },

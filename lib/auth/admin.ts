@@ -3,12 +3,10 @@
  * Implements role-based access control with granular permissions
  */
 
-import { cookies } from 'next/headers';
 import { createAdminClient } from '@/lib/db/supabaseAdmin';
 import { getServerSessionFromRequest } from './session';
 import {
   getEffectivePermissions,
-  PERMISSIONS,
   type Permission,
   type AdminRole,
   type AdminRoleData,

@@ -102,15 +102,41 @@ export function calculateGrandTotal(treasuries: TreasuryItem[]): GrandTotal {
 /**
  * Format treasury items with calculated available balance
  */
-export function formatTreasuryItems(rawTreasuries: any[]): TreasuryItem[] {
-  return rawTreasuries.map(t => ({
-    contract_id: t.contract_id,
-    chain: t.chain,
-    game_type: t.game_type,
-    game_name: t.game_name,
-    balance: t.balance,
-    reserved: t.reserved,
-    available: (parseFloat(t.balance) - parseFloat(t.reserved)).toFixed(8),
-    updated_at: t.updated_at,
-  }));
+const isValidChain = (value: string): value is TreasuryItem['chain'] =>
+  value === 'voi' || value === 'base' || value === 'solana';
+
+const isValidGameType = (value: string): value is TreasuryItem['game_type'] =>
+  value === 'slots' || value === 'keno' || value === 'roulette';
+
+export function formatTreasuryItems(rawTreasuries: Array<{
+  contract_id: number;
+  chain: string | null;
+  game_type: string | null;
+  game_name: string;
+  balance: string;
+  reserved: string;
+  updated_at: string;
+}>): TreasuryItem[] {
+  return rawTreasuries.reduce<TreasuryItem[]>((acc, t) => {
+    if (!t.chain || !isValidChain(t.chain)) {
+      return acc;
+    }
+
+    if (!t.game_type || !isValidGameType(t.game_type)) {
+      return acc;
+    }
+
+    acc.push({
+      contract_id: t.contract_id,
+      chain: t.chain,
+      game_type: t.game_type,
+      game_name: t.game_name,
+      balance: t.balance,
+      reserved: t.reserved,
+      available: (parseFloat(t.balance) - parseFloat(t.reserved)).toFixed(8),
+      updated_at: t.updated_at,
+    });
+
+    return acc;
+  }, []);
 }

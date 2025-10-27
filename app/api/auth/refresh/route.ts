@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createHash } from 'crypto';
 import { createAdminClient } from '@/lib/db/supabaseAdmin';
@@ -19,7 +19,7 @@ import { SESSION_COOKIE, setSessionCookie } from '@/lib/auth/cookies';
  * 2. Update the session expiration if valid
  * 3. Return session status
  */
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE)?.value;

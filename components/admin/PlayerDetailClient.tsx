@@ -121,9 +121,10 @@ export default function PlayerDetailClient({ playerId }: PlayerDetailClientProps
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Display Name</label>
+            <label htmlFor="display-name" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Display Name</label>
             {editing ? (
               <input
+                id="display-name"
                 type="text"
                 value={editForm.display_name || ''}
                 onChange={(e) => setEditForm({ ...editForm, display_name: e.target.value })}
@@ -135,9 +136,10 @@ export default function PlayerDetailClient({ playerId }: PlayerDetailClientProps
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Email</label>
             {editing ? (
               <input
+                id="email"
                 type="email"
                 value={editForm.primary_email || ''}
                 onChange={(e) => setEditForm({ ...editForm, primary_email: e.target.value })}
@@ -149,9 +151,10 @@ export default function PlayerDetailClient({ playerId }: PlayerDetailClientProps
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Game Access</label>
+            <label htmlFor="game-access" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Game Access</label>
             {editing ? (
               <select
+                id="game-access"
                 value={editForm.game_access_granted ? 'true' : 'false'}
                 onChange={(e) =>
                   setEditForm({ ...editForm, game_access_granted: e.target.value === 'true' })
@@ -177,9 +180,10 @@ export default function PlayerDetailClient({ playerId }: PlayerDetailClientProps
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Max Referrals</label>
+            <label htmlFor="max-referrals" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Max Referrals</label>
             {editing ? (
               <input
+                id="max-referrals"
                 type="number"
                 value={editForm.max_referrals || 5}
                 onChange={(e) =>
@@ -193,13 +197,13 @@ export default function PlayerDetailClient({ playerId }: PlayerDetailClientProps
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Player ID</label>
-            <div className="text-neutral-900 dark:text-neutral-100 font-mono text-sm">{player.id}</div>
+            <label htmlFor="player-id" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Player ID</label>
+            <div id="player-id" className="text-neutral-900 dark:text-neutral-100 font-mono text-sm">{player.id}</div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Joined</label>
-            <div className="text-neutral-900 dark:text-neutral-100">{new Date(player.created_at).toLocaleString()}</div>
+            <label htmlFor="joined-date" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Joined</label>
+            <div id="joined-date" className="text-neutral-900 dark:text-neutral-100">{new Date(player.created_at).toLocaleString()}</div>
           </div>
         </div>
       </div>

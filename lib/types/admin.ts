@@ -75,7 +75,7 @@ export interface GameListItem {
 }
 
 export interface GameDetail extends GameListItem {
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   recent_plays: Array<{
     id: string;
     profile_id: string;
@@ -91,7 +91,7 @@ export interface GameCreateData {
   game_type: 'slots' | 'keno' | 'roulette';
   name: string;
   description?: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   house_edge: number;
   min_bet: number;
   max_bet: number;
@@ -101,7 +101,7 @@ export interface GameCreateData {
 export interface GameUpdateData {
   name?: string;
   description?: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   house_edge?: number;
   min_bet?: number;
   max_bet?: number;
@@ -339,7 +339,7 @@ export interface SlotMachineConfig {
   min_bet: number;
   max_bet: number;
   max_paylines: number;
-  reel_config: Record<string, any>;
+  reel_config: Record<string, unknown>;
   is_active: boolean;
   launched_at: string;
   deprecated_at: string | null;
@@ -379,7 +379,7 @@ export interface PaginatedResponse<T> {
   };
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

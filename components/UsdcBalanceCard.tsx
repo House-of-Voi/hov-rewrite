@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchAllBalances, formatBalance, formatUsdValue } from '@/lib/voi/balances';
+import { fetchAllBalances, formatBalance } from '@/lib/voi/balances';
 import { openIBuyVoiWidget, isPopupBlocked } from '@/lib/voi/ibuyvoi';
 import type { AssetBalance } from '@/lib/voi/balances';
 import Button from './Button';
@@ -75,9 +75,6 @@ export default function UsdcBalanceCard({ address }: UsdcBalanceCardProps) {
   const formattedBalance = usdcBalance
     ? formatBalance(usdcBalance.balance, usdcBalance.decimals)
     : '0.00';
-  const formattedUsd = usdcBalance
-    ? formatUsdValue(usdcBalance.usdValue)
-    : '$0.00';
 
   return (
     <Card>

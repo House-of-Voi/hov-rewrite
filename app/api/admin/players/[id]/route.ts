@@ -79,7 +79,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const last_play_at = plays?.[0]?.created_at || null;
 
     // Get Mimir stats for each account
-    let mimirStats = {
+    const mimirStats = {
       total_spins: 0,
       total_bet: '0',
       total_won: '0',
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       referrals_count,
       active_referrals_count,
       referral_credits_earned: referral_credits_earned.toFixed(8),
-      accounts: (profile.accounts || []).map((a: any) => ({
+      accounts: (profile.accounts || []).map((a: { chain: string; address: string; is_primary: boolean }) => ({
         chain: a.chain,
         address: a.address,
         is_primary: a.is_primary,
@@ -154,10 +154,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
       { success: true, data: playerDetail },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching player detail:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }
@@ -217,10 +217,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       { success: true, data, message: 'Player updated successfully' },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating player:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }

@@ -59,7 +59,6 @@ export async function getContractBalances(
   }
 
   const nodeUrl = config.nodeUrl || env.VOI_NODE_URL;
-  const indexerUrl = config.indexerUrl || env.VOI_INDEXER_URL;
 
   if (!nodeUrl) {
     throw new Error('VOI_NODE_URL not configured');
@@ -74,7 +73,7 @@ export async function getContractBalances(
   try {
     // First, get the contract's account balance
     const accountInfo = await client.accountInformation(contractAddress).do();
-    const balanceTotal = accountInfo.amount / 1e6; // Convert microVOI to VOI
+    const balanceTotal = Number(accountInfo.amount) / 1e6; // Convert microVOI to VOI
 
     // Now call the contract's get_balances() method
     // This is a readonly call, so we use suggested params and simulate
@@ -82,17 +81,22 @@ export async function getContractBalances(
 
     // Create application call transaction for get_balances()
     const txn = algosdk.makeApplicationNoOpTxnFromObject({
-      from: contractAddress, // Can be any address for readonly calls
+      sender: contractAddress, // Can be any address for readonly calls
       appIndex: appId,
       appArgs: [new Uint8Array(Buffer.from('get_balances'))],
       suggestedParams,
     });
 
     // Simulate the transaction to get return value
+    const encodedSimTxn = algosdk.encodeUnsignedSimulateTransaction(txn);
+    const signedTxn = algosdk.SignedTransaction.fromEncodingData(
+      algosdk.decodeObj(encodedSimTxn)
+    );
+
     const request = new algosdk.modelsv2.SimulateRequest({
       txnGroups: [
         new algosdk.modelsv2.SimulateRequestTransactionGroup({
-          txns: [algosdk.decodeObj(algosdk.encodeObj(txn)) as algosdk.EncodedTransaction]
+          txns: [signedTxn]
         })
       ]
     });
@@ -111,8 +115,11 @@ export async function getContractBalances(
       throw new Error('No return value in contract logs');
     }
 
-    // Decode the log (it's base64 encoded)
-    const returnValueBytes = Buffer.from(lastLog, 'base64');
+    // Decode the log (handle both string and byte array cases)
+    const returnValueBytes =
+      typeof lastLog === 'string'
+        ? Uint8Array.from(Buffer.from(lastLog, 'base64'))
+        : new Uint8Array(lastLog);
 
     // Skip first 4 bytes (ABI return prefix) and decode balances
     const balanceData = returnValueBytes.slice(4);
@@ -136,4 +143,3 @@ export async function getContractBalances(
     throw new Error(`Failed to get contract balances: ${errorMessage}`);
   }
 }
-

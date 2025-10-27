@@ -218,7 +218,7 @@ export default function DashboardClient() {
                         <code className="text-xs font-mono text-neutral-400">
                           {game.player_address.slice(0, 6)}...{game.player_address.slice(-4)}
                         </code>
-                        <ChainBadge chain={game.chain as any} />
+                        <ChainBadge chain={game.chain as 'base' | 'voi' | 'solana'} />
                       </div>
                       <div className="text-xs text-neutral-500">
                         {new Date(game.created_at).toLocaleTimeString()}

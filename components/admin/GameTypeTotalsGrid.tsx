@@ -1,5 +1,4 @@
 import Card, { CardContent, CardHeader } from '@/components/Card';
-import { SlotMachineIcon } from '@/components/icons';
 import type { GameTypeTotal } from '@/lib/types/admin';
 import { formatNumberCompact } from '@/lib/utils/format';
 

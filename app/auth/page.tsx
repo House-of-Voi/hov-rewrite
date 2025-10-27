@@ -11,7 +11,6 @@ import {
   useGetAccessToken,
   useExportEvmAccount,
   useEvmAddress,
-  useSignOut,
   type OAuth2ProviderType,
   type User
 } from '@coinbase/cdp-hooks';

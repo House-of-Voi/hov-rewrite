@@ -252,7 +252,7 @@ export default function PlayersTable() {
                           <div className="space-y-1">
                             {player.accounts.map((account, idx) => (
                               <div key={idx} className="flex items-center gap-2">
-                                <ChainBadge chain={account.chain as any} />
+                                <ChainBadge chain={account.chain as 'base' | 'voi' | 'solana'} />
                                 <span className="text-xs text-neutral-400 font-mono">
                                   {account.address.slice(0, 6)}...{account.address.slice(-4)}
                                 </span>

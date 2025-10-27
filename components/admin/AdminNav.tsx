@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AdminRole, PERMISSIONS, getEffectivePermissions } from '@/lib/auth/permissions';
+import { AdminRole, PERMISSIONS, getEffectivePermissions, type Permission } from '@/lib/auth/permissions';
 
 interface AdminNavProps {
   role: AdminRole;
@@ -13,12 +13,17 @@ export default function AdminNav({ role, permissions }: AdminNavProps) {
   const pathname = usePathname();
 
   // Convert permissions object to array for checking
-  const roleData = { role, permissions } as any;
+  const roleData = { role, permissions, profile_id: '', granted_by: null, granted_at: '' };
   const effectivePerms = getEffectivePermissions(roleData);
 
-  const hasPermission = (perm: string) => effectivePerms.includes(perm as any);
+  const hasPermission = (perm: Permission) => effectivePerms.includes(perm);
 
-  const navItems = [
+  const navItems: Array<{
+    href: string;
+    label: string;
+    permission: Permission;
+    exact?: boolean;
+  }> = [
     {
       href: '/admin',
       label: 'Dashboard',

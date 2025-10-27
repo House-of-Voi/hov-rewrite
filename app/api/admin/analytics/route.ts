@@ -86,8 +86,8 @@ export async function GET() {
       machines: 0,
     };
 
-    const topGames: AnalyticsGameItem[] = machineStats
-      .map(({ config, allTime }) => {
+    const topGames = machineStats
+      .map(({ config, allTime }): AnalyticsGameItem | null => {
         if (!allTime) return null;
 
         const totalWagered = numberFrom(allTime.total_amount_bet);
@@ -164,8 +164,8 @@ export async function GET() {
     }
 
     const chain_distribution: AnalyticsChainDistributionItem[] = Array.from(chainTotals.entries())
-      .map(([chain, totals]) => ({
-        chain: ['voi', 'base', 'solana'].includes(chain) ? (chain as 'voi' | 'base' | 'solana') : 'unknown',
+      .map(([chain, totals]): AnalyticsChainDistributionItem => ({
+        chain: (['voi', 'base', 'solana'].includes(chain) ? chain : 'unknown') as 'voi' | 'base' | 'solana' | 'unknown',
         total_wagered: microToString(totals.wagered),
         total_payout: microToString(totals.payout),
         house_profit: microToString(totals.profit),

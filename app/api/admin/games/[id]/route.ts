@@ -12,6 +12,52 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
+type ProfileAccount = {
+  address?: string | null;
+  chain?: string | null;
+  is_primary?: boolean | null;
+};
+
+type ProfileWithAccounts = {
+  accounts?: ProfileAccount[] | null;
+};
+
+function getPrimaryAccountAddress(profiles: unknown): string {
+  const candidates = Array.isArray(profiles) ? profiles : profiles ? [profiles] : [];
+
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== 'object') {
+      continue;
+    }
+
+    const { accounts } = candidate as ProfileWithAccounts;
+
+    if (!Array.isArray(accounts)) {
+      continue;
+    }
+
+    const typedAccounts = accounts.filter(
+      (account): account is ProfileAccount =>
+        account !== null && typeof account === 'object'
+    );
+
+    if (typedAccounts.length === 0) {
+      continue;
+    }
+
+    const primaryAccount =
+      typedAccounts.find((account) => account.is_primary === true) ?? typedAccounts[0];
+
+    const address = primaryAccount?.address;
+
+    if (typeof address === 'string' && address.length > 0) {
+      return address;
+    }
+  }
+
+  return 'Unknown';
+}
+
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const profileId = await getCurrentProfileId();
@@ -78,9 +124,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       total_wagered: total_wagered.toFixed(8),
       total_payout: total_payout.toFixed(8),
       recent_plays: (recentPlays || []).map(play => {
-        const accounts = (play.profiles as any)?.accounts || [];
-        const primaryAccount = accounts.find((a: any) => a.is_primary) || accounts[0];
-        const playerAddress = primaryAccount?.address || 'Unknown';
+        const playerAddress = getPrimaryAccountAddress(play.profiles);
 
         return {
           id: play.id,
@@ -98,10 +142,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
       { success: true, data: gameDetail },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching game detail:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }
@@ -162,10 +206,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       { success: true, data, message: 'Game updated successfully' },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating game:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }
@@ -207,10 +251,10 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       { success: true, data, message: 'Game deactivated successfully' },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting game:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }

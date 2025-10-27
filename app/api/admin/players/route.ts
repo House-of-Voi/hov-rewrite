@@ -8,6 +8,38 @@ import { createAdminClient } from '@/lib/db/supabaseAdmin';
 import { requirePermission, getCurrentProfileId, PERMISSIONS } from '@/lib/auth/admin';
 import type { ApiResponse, PaginatedResponse, PlayerListItem, PlayerFilters } from '@/lib/types/admin';
 
+type SupabaseAccount = {
+  chain?: string | null;
+  address?: string | null;
+  is_primary?: boolean | null;
+};
+
+const normalizeAccounts = (accounts: unknown): PlayerListItem['accounts'] => {
+  if (!Array.isArray(accounts)) {
+    return [];
+  }
+
+  return accounts.reduce<PlayerListItem['accounts']>((acc, account) => {
+    if (!account || typeof account !== 'object') {
+      return acc;
+    }
+
+    const { chain, address, is_primary } = account as SupabaseAccount;
+
+    if (typeof chain !== 'string' || typeof address !== 'string') {
+      return acc;
+    }
+
+    acc.push({
+      chain,
+      address,
+      is_primary: is_primary === true,
+    });
+
+    return acc;
+  }, []);
+};
+
 export async function GET(request: NextRequest) {
   try {
     const profileId = await getCurrentProfileId();
@@ -98,7 +130,7 @@ export async function GET(request: NextRequest) {
     let playersData = profiles || [];
     if (filters.chain) {
       playersData = playersData.filter(p =>
-        p.accounts?.some((a: any) => a.chain === filters.chain)
+        p.accounts?.some((a: { chain: string }) => a.chain === filters.chain)
       );
     }
 
@@ -124,6 +156,9 @@ export async function GET(request: NextRequest) {
     // Format response
     const players: PlayerListItem[] = playersData.map(profile => {
       const stats = statsMap.get(profile.id);
+      const totalWagered = stats?.total_wagered ?? 0;
+      const lastPlayAt = stats?.last_play_at ?? undefined;
+
       return {
         id: profile.id,
         primary_email: profile.primary_email,
@@ -134,13 +169,9 @@ export async function GET(request: NextRequest) {
         waitlist_joined_at: profile.waitlist_joined_at,
         created_at: profile.created_at,
         total_plays: stats?.total_plays || 0,
-        total_wagered: stats?.total_wagered.toFixed(8) || '0.00000000',
-        last_play_at: stats?.last_play_at || null,
-        accounts: (profile.accounts || []).map((a: any) => ({
-          chain: a.chain,
-          address: a.address,
-          is_primary: a.is_primary,
-        })),
+        total_wagered: totalWagered.toFixed(8),
+        ...(lastPlayAt ? { last_play_at: lastPlayAt } : {}),
+        accounts: normalizeAccounts(profile.accounts),
       };
     });
 
@@ -158,10 +189,10 @@ export async function GET(request: NextRequest) {
       { success: true, data: response },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in players API:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }

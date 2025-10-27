@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Card, { CardContent, CardHeader } from '@/components/Card';
 import Button from '@/components/Button';
-import Input from '@/components/Input';
 import { SlotMachineIcon } from '@/components/icons';
 import type { SlotMachineConfigListItem, PaginatedResponse } from '@/lib/types/admin';
 import { formatNumberCompact } from '@/lib/utils/format';
@@ -25,12 +24,6 @@ const toPercent = (value: string | number) => {
   return numeric.toFixed(2);
 };
 
-const formatCurrency = (value: string | number) => {
-  const numeric = typeof value === 'string' ? parseFloat(value) : value;
-  if (Number.isNaN(numeric)) return '0.00';
-  return numeric.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
-
 const formatMicroVoi = (microVoi: number) => {
   return (microVoi / 1000000).toFixed(6);
 };
@@ -50,13 +43,6 @@ export default function GamesClient() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingGame, setEditingGame] = useState<SlotMachineConfigListItem | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [editForm, setEditForm] = useState({
-    house_edge: '',
-    min_bet: '',
-    max_bet: '',
-    description: '',
-  });
 
   useEffect(() => {
     fetchGames();
@@ -104,29 +90,14 @@ export default function GamesClient() {
   };
 
   const handleToggleGameStatus = async (game: SlotMachineConfigListItem) => {
-    alert('Status toggling for slot machine configs will be implemented in the next phase');
+    alert(
+      `Status toggling for ${game.display_name} will be implemented in the next phase`
+    );
     // TODO: Implement API endpoint for updating slot machine config status
   };
 
   const openEditModal = (game: SlotMachineConfigListItem) => {
     setEditingGame(game);
-    setEditForm({
-      house_edge: toPercent(game.house_edge),
-      min_bet: formatMicroVoi(game.min_bet),
-      max_bet: formatMicroVoi(game.max_bet),
-      description: game.description || '',
-    });
-  };
-
-  const handleEditChange = (field: keyof typeof editForm, value: string) => {
-    setEditForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const saveGameChanges = async () => {
-    if (!editingGame) return;
-    alert('Editing slot machine configs will be implemented in the next phase');
-    // TODO: Implement API endpoint for updating slot machine configs
-    setEditingGame(null);
   };
 
   const paginatedLabel = useMemo(() => {

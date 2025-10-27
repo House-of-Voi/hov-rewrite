@@ -110,10 +110,10 @@ export async function GET(request: NextRequest) {
       { success: true, data: response },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in slot configs API:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }

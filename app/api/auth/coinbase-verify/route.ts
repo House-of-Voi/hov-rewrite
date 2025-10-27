@@ -117,8 +117,6 @@ export async function POST(req: NextRequest) {
       (await fetchProfileByIdentifier(normalizedPhone)) ??
       (await fetchProfileByIdentifier(fallbackIdentity));
 
-    let isNewProfile = false;
-
     if (profile) {
       // Backfill the real email if we previously stored a placeholder
       if (normalizedEmail && profile.primary_email !== normalizedEmail) {
@@ -138,7 +136,6 @@ export async function POST(req: NextRequest) {
     } else {
       const identity = normalizedEmail ?? normalizedPhone ?? fallbackIdentity;
       // New profile - join waitlist
-      isNewProfile = true;
 
       const { data: newProfile, error: profileError } = await supabase
         .from('profiles')

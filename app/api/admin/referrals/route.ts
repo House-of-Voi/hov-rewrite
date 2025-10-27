@@ -58,10 +58,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Parse query parameters for list view
+    const statusParam = searchParams.get('status');
     const filters: ReferralFilters = {
       page: parseInt(searchParams.get('page') || '1'),
       limit: Math.min(parseInt(searchParams.get('limit') || '50'), 100),
-      status: searchParams.get('status') as any || undefined,
+      status: (statusParam && ['active', 'pending', 'converted', 'deactivated'].includes(statusParam) ? statusParam as 'active' | 'pending' | 'converted' | 'deactivated' : undefined),
       referrer_id: searchParams.get('referrer_id') || undefined,
       created_after: searchParams.get('created_after') || undefined,
       created_before: searchParams.get('created_before') || undefined,
@@ -167,8 +168,10 @@ export async function GET(request: NextRequest) {
 
     // Format response
     const referralCodes: ReferralCodeItem[] = (codes || []).map(code => {
-      const referrer = (code.referrer as any)?.[0] || {};
-      const referred = (code.referred as any)?.[0] || {};
+      const referrerData = code.referrer as Array<{ primary_email?: string; display_name?: string }> | null;
+      const referredData = code.referred as Array<{ primary_email?: string; display_name?: string }> | null;
+      const referrer = referrerData?.[0] || {};
+      const referred = referredData?.[0] || {};
 
       return {
         id: code.id,
@@ -202,10 +205,10 @@ export async function GET(request: NextRequest) {
       { success: true, data: response },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in referrals API:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }

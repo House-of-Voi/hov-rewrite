@@ -16,7 +16,6 @@ export default function SwapPlaceholderModal({
   action,
 }: SwapPlaceholderModalProps) {
   const actionText = action === 'deposit' ? 'Deposit' : 'Withdraw';
-  const swapDirection = action === 'deposit' ? 'USDC → ' : ' → USDC';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

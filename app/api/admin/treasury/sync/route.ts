@@ -20,7 +20,7 @@ interface SyncResult {
 export async function POST() {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.MANAGE_GAMES, profileId ?? undefined);
+    await requirePermission(PERMISSIONS.MANAGE_TREASURY, profileId ?? undefined);
 
     // Check if Voi configuration is available
     if (!env.VOI_NODE_URL) {
@@ -139,10 +139,10 @@ export async function POST() {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error syncing treasury:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }

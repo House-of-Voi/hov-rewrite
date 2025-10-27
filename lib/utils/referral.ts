@@ -29,7 +29,7 @@ export async function generateUniqueReferralCode(
     const code = generateReferralCode();
 
     // Check if code already exists
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('profiles')
       .select('id')
       .eq('referral_code', code)
