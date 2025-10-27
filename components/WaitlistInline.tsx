@@ -112,11 +112,11 @@ export default function WaitlistInline({
         <div className="text-center space-y-4">
           <a href="/app/waitlist" className="inline-block">
             <Button variant="outline" size="md">
-              View Full Waitlist Status
+              Enter Referral Code
             </Button>
           </a>
           <div className="text-sm text-neutral-600 dark:text-neutral-400">
-            Want to move up? Add a referral code on your waitlist page.
+            Have a referral code? Enter it to move up the waitlist.
           </div>
         </div>
       )}

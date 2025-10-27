@@ -45,17 +45,13 @@ export default async function GamesNavLink() {
     );
   }
 
-  // User is on waitlist - show disabled link with tooltip
+  // User is on waitlist - show normal link (they can view their waitlist status)
   return (
     <Link
       href="/app/games"
-      className="px-4 py-2 text-sm font-medium text-neutral-500 dark:text-neutral-500 cursor-not-allowed opacity-60 rounded-lg relative group"
-      title="On Waitlist - Join the game soon!"
+      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
     >
       Games
-      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-neutral-900 dark:bg-neutral-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
-        On Waitlist
-      </span>
     </Link>
   );
 }
