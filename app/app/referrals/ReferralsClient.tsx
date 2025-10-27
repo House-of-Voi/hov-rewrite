@@ -122,7 +122,7 @@ export default function ReferralsClient() {
           <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">
             Referrals
           </h1>
-          <p className="text-neutral-400 mt-2">Loading your referral stats...</p>
+          <p className="text-tertiary mt-2">Loading your referral stats...</p>
         </div>
       </div>
     );
@@ -159,7 +159,7 @@ export default function ReferralsClient() {
           <h1 className="text-5xl font-black text-gold-400 neon-text uppercase">
             Referrals
           </h1>
-          <p className="text-neutral-400 text-lg mt-2">
+          <p className="text-tertiary text-lg mt-2">
             Create unique codes for each person you invite
           </p>
         </div>
@@ -171,14 +171,14 @@ export default function ReferralsClient() {
         <CardContent className="space-y-4">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-neutral-400 text-sm">Your Referral Codes</p>
+              <p className="text-tertiary text-sm">Your Referral Codes</p>
               <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-3xl font-black text-gold-400">
                   {stats.codesGenerated}
                 </span>
-                <span className="text-xl text-neutral-400">/ {stats.maxReferrals}</span>
+                <span className="text-xl text-tertiary">/ {stats.maxReferrals}</span>
               </div>
-              <p className="text-neutral-500 text-xs mt-1">
+              <p className="text-neutral-600 dark:text-neutral-500 text-xs mt-1">
                 {stats.codesAvailable > 0 ? (
                   <>You can create {stats.codesAvailable} more code{stats.codesAvailable !== 1 ? 's' : ''}</>
                 ) : (
@@ -232,7 +232,7 @@ export default function ReferralsClient() {
                           </span>
                         )}
                         {isUnused && (
-                          <span className="px-2 py-0.5 bg-neutral-700/50 text-neutral-400 text-xs rounded-full border border-neutral-600 uppercase font-bold">
+                          <span className="px-2 py-0.5 bg-neutral-300/50 dark:bg-neutral-700/50 text-neutral-600 dark:text-neutral-400 text-xs rounded-full border border-neutral-400 dark:border-neutral-600 uppercase font-bold">
                             Unused
                           </span>
                         )}
@@ -244,25 +244,25 @@ export default function ReferralsClient() {
                       </div>
 
                       {isConverted ? (
-                        <p className="text-sm text-neutral-400">
+                        <p className="text-sm text-tertiary">
                           Converted {new Date(code.convertedAt!).toLocaleDateString()}
                         </p>
                       ) : isPending ? (
-                        <p className="text-sm text-neutral-400">
+                        <p className="text-sm text-tertiary">
                           Link clicked {new Date(code.attributedAt!).toLocaleDateString()} • Awaiting signup
                         </p>
                       ) : code.deactivatedAt ? (
-                        <p className="text-sm text-neutral-400">
+                        <p className="text-sm text-tertiary">
                           Deactivated {new Date(code.deactivatedAt).toLocaleDateString()}
                         </p>
                       ) : (
-                        <p className="text-sm text-neutral-400">
+                        <p className="text-sm text-tertiary">
                           Created {new Date(code.createdAt).toLocaleDateString()} • Not yet shared
                         </p>
                       )}
 
                       {!code.deactivatedAt && (
-                        <div className="mt-3 text-xs font-mono text-neutral-500 bg-neutral-900 px-3 py-2 rounded border border-neutral-800">
+                        <div className="mt-3 text-xs font-mono text-neutral-600 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-900 px-3 py-2 rounded border border-neutral-300 dark:border-neutral-800">
                           {referralUrl}
                         </div>
                       )}
@@ -302,8 +302,8 @@ export default function ReferralsClient() {
             <div className="text-4xl font-black text-green-400">
               {stats.activeReferrals}
             </div>
-            <p className="text-neutral-400">Active Referrals</p>
-            <p className="text-sm text-neutral-500">
+            <p className="text-secondary">Active Referrals</p>
+            <p className="text-sm text-tertiary">
               {slotsRemaining} slot{slotsRemaining !== 1 ? 's' : ''} remaining
             </p>
           </CardContent>
@@ -315,8 +315,8 @@ export default function ReferralsClient() {
             <div className="text-4xl font-black text-yellow-400">
               {stats.queuedReferrals}
             </div>
-            <p className="text-neutral-400">In Queue</p>
-            <p className="text-sm text-neutral-500">
+            <p className="text-secondary">In Queue</p>
+            <p className="text-sm text-tertiary">
               Waiting for slots to open
             </p>
           </CardContent>
@@ -328,8 +328,8 @@ export default function ReferralsClient() {
             <div className="text-4xl font-black text-gold-400">
               {stats.totalReferrals}
             </div>
-            <p className="text-neutral-400">Total Referrals</p>
-            <p className="text-sm text-neutral-500">All-time signups</p>
+            <p className="text-secondary">Total Referrals</p>
+            <p className="text-sm text-tertiary">All-time signups</p>
           </CardContent>
         </Card>
       </div>
@@ -338,14 +338,14 @@ export default function ReferralsClient() {
       <Card>
         <CardContent className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-neutral-400 font-semibold">
+            <span className="text-secondary font-semibold">
               Referral Capacity
             </span>
             <span className="text-gold-400 font-bold">
               {stats.activeReferrals} / {stats.maxReferrals}
             </span>
           </div>
-          <div className="w-full bg-neutral-800 rounded-full h-4 overflow-hidden">
+          <div className="w-full bg-neutral-300 dark:bg-neutral-800 rounded-full h-4 overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
               style={{
@@ -367,7 +367,7 @@ export default function ReferralsClient() {
       <Card>
         <CardContent className="space-y-4">
           <h3 className="text-xl font-bold text-gold-400">How It Works</h3>
-          <ul className="space-y-2 text-neutral-400">
+          <ul className="space-y-2 text-secondary">
             <li className="flex items-start gap-2">
               <span className="text-gold-400 mt-1">•</span>
               <span>
@@ -391,10 +391,6 @@ export default function ReferralsClient() {
               <span>
                 You can have up to {stats.maxReferrals} active referrals - additional signups join a queue
               </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-gold-400 mt-1">•</span>
-              <span>Earn 0.5% of your referrals&apos; wagers as free credits</span>
             </li>
           </ul>
         </CardContent>

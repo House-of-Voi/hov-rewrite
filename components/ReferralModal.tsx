@@ -101,9 +101,9 @@ export default function ReferralModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Referral Codes" size="xl">
       <div className="space-y-6">
         {/* Header Info */}
-        <div className="p-4 rounded-xl bg-gradient-to-r from-gold-900/20 to-royal-900/20 border border-gold-500/20">
-          <p className="text-sm text-neutral-400">
-            Each code is for one specific person. Earn <span className="text-gold-400 font-bold">0.5% of their wagers</span> as free game credits!
+        <div className="p-4 rounded-xl bg-gradient-to-r from-warning-100 dark:from-warning-900/20 to-primary-100 dark:to-primary-900/20 border border-warning-300 dark:border-warning-500/20">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Each code is for one specific person. Earn <span className="text-warning-500 dark:text-warning-400 font-bold">0.5% of their wagers</span> as free game credits!
           </p>
         </div>
 
@@ -112,11 +112,11 @@ export default function ReferralModal({
           <div className="text-sm text-neutral-400">
             {codesAvailable > 0 ? (
               <span>
-                You can create <span className="text-gold-400 font-bold">{codesAvailable}</span> more code
+                You can create <span className="text-warning-500 dark:text-warning-400 font-bold">{codesAvailable}</span> more code
                 {codesAvailable !== 1 ? 's' : ''}
               </span>
             ) : (
-              <span className="text-ruby-400">You&apos;ve reached your limit of referral codes</span>
+              <span className="text-error-600 dark:text-error-400">You&apos;ve reached your limit of referral codes</span>
             )}
           </div>
           <Button
@@ -145,30 +145,30 @@ export default function ReferralModal({
                 key={code.id}
                 className={`p-4 rounded-lg border transition-colors ${
                   isConverted
-                    ? 'border-green-500/30 bg-green-500/5'
+                    ? 'border-success-300 dark:border-success-500/30 bg-success-50 dark:bg-success-500/5'
                     : isPending
-                    ? 'border-gold-500/30 bg-gold-500/5'
-                    : 'border-neutral-800 hover:bg-neutral-900/50'
+                    ? 'border-warning-300 dark:border-warning-500/30 bg-warning-50 dark:bg-warning-500/5'
+                    : 'border-neutral-300 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900/50'
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1">
-                    <div className="text-gold-400 mt-1">
+                    <div className="text-warning-500 dark:text-warning-400 mt-1">
                       <TicketIcon size={24} />
                     </div>
                     <div className="flex-1">
                       {/* Code Header */}
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="font-mono text-lg font-black text-gold-400">
+                        <span className="font-mono text-lg font-black text-warning-500 dark:text-warning-400">
                           {code.code}
                         </span>
                         {isConverted && (
-                          <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30 uppercase font-bold">
+                          <span className="px-2 py-0.5 bg-success-100 dark:bg-success-500/20 text-success-600 dark:text-success-400 text-xs rounded-full border border-success-300 dark:border-success-500/30 uppercase font-bold">
                             Active
                           </span>
                         )}
                         {isPending && (
-                          <span className="px-2 py-0.5 bg-gold-500/20 text-gold-400 text-xs rounded-full border border-gold-500/30 uppercase font-bold">
+                          <span className="px-2 py-0.5 bg-warning-100 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400 text-xs rounded-full border border-warning-300 dark:border-warning-500/30 uppercase font-bold">
                             Pending
                           </span>
                         )}
@@ -178,7 +178,7 @@ export default function ReferralModal({
                           </span>
                         )}
                         {code.deactivatedAt && (
-                          <span className="px-2 py-0.5 bg-ruby-500/20 text-ruby-400 text-xs rounded-full border border-ruby-500/30 uppercase font-bold">
+                          <span className="px-2 py-0.5 bg-error-100 dark:bg-error-500/20 text-error-600 dark:text-error-400 text-xs rounded-full border border-error-300 dark:border-error-500/30 uppercase font-bold">
                             Deactivated
                           </span>
                         )}
@@ -202,7 +202,7 @@ export default function ReferralModal({
                           <div className="grid grid-cols-2 gap-3 pt-2">
                             <div className="p-2 rounded bg-neutral-900/50 border border-neutral-800">
                               <div className="text-xs text-neutral-500 mb-1">Credits Earned</div>
-                              <div className="text-sm font-bold text-gold-400">
+                              <div className="text-sm font-bold text-warning-500 dark:text-warning-400">
                                 ${formatCurrency(details.creditsEarned)}
                               </div>
                             </div>
@@ -246,7 +246,7 @@ export default function ReferralModal({
                           <button
                             onClick={() => handleDeactivate(code.id)}
                             disabled={deactivatingId === code.id}
-                            className="px-3 py-1.5 text-xs text-ruby-400 border border-ruby-500/30 rounded hover:bg-ruby-500/10 transition-colors disabled:opacity-50"
+                            className="px-3 py-1.5 text-xs text-error-600 dark:text-error-400 border border-error-300 dark:border-error-500/30 rounded hover:bg-error-50 dark:hover:bg-error-500/10 transition-colors disabled:opacity-50"
                           >
                             {deactivatingId === code.id ? 'Deactivating...' : 'Deactivate'}
                           </button>

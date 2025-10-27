@@ -219,7 +219,7 @@ export default function AvatarEditModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-neutral-900/50 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
       onKeyDown={handleOverlayKeyDown}
       role="button"
@@ -227,19 +227,19 @@ export default function AvatarEditModal({
       tabIndex={0}
     >
       <div
-        className="bg-neutral-900 rounded-xl border-2 border-gold-500/30 max-w-lg w-full p-6 space-y-6"
+        className="bg-white dark:bg-neutral-900 rounded-xl border-2 border-warning-300 dark:border-warning-500/30 max-w-lg w-full p-6 space-y-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="avatar-modal-title"
       >
         <div className="flex items-center justify-between">
-          <h3 id="avatar-modal-title" className="text-2xl font-bold text-gold-400 uppercase">
+          <h3 id="avatar-modal-title" className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">
             {currentAvatarUrl ? 'Change Avatar' : 'Upload Avatar'}
           </h3>
           <button
             onClick={handleCancel}
             disabled={isUploading}
-            className="text-neutral-400 hover:text-gold-400 transition-colors text-2xl leading-none"
+            className="text-neutral-600 dark:text-neutral-400 hover:text-warning-500 dark:hover:text-warning-400 transition-colors text-2xl leading-none"
           >
             ×
           </button>
@@ -263,8 +263,8 @@ export default function AvatarEditModal({
               cursor-pointer border-2 border-dashed rounded-xl p-12 text-center transition-all
               ${
                 isDragging
-                  ? 'border-gold-500 bg-gold-500/10'
-                  : 'border-gold-500/30 hover:border-gold-500/50 hover:bg-gold-500/5'
+                  ? 'border-warning-500 bg-warning-50 dark:bg-warning-500/10'
+                  : 'border-warning-300 dark:border-warning-500/30 hover:border-warning-500 dark:hover:border-warning-500/50 hover:bg-warning-50 dark:hover:bg-warning-500/5'
               }
             `}
             role="button"
@@ -276,13 +276,13 @@ export default function AvatarEditModal({
                 {isDragging ? '📥' : '📷'}
               </div>
               <div>
-                <p className="text-gold-400 font-bold text-lg">
+                <p className="text-warning-500 dark:text-warning-400 font-bold text-lg">
                   {isDragging ? 'Drop image here' : 'Choose an image'}
                 </p>
-                <p className="text-neutral-400 text-sm mt-2">
+                <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-2">
                   Click to browse or drag and drop
                 </p>
-                <p className="text-neutral-500 text-xs mt-1">
+                <p className="text-neutral-600 dark:text-neutral-500 text-xs mt-1">
                   Any image format • Any size (we&apos;ll optimize it)
                 </p>
               </div>
@@ -290,7 +290,7 @@ export default function AvatarEditModal({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex flex-col items-center gap-4 p-6 border-2 border-gold-500/30 rounded-xl bg-neutral-900/50">
+            <div className="flex flex-col items-center gap-4 p-6 border-2 border-warning-300 dark:border-warning-500/30 rounded-xl bg-neutral-100 dark:bg-neutral-900/50">
               <AvatarEditor
                 ref={editorRef}
                 image={selectedImage}
@@ -305,7 +305,7 @@ export default function AvatarEditModal({
               />
 
               <div className="w-full space-y-2">
-                <label className="block text-sm font-semibold text-gold-400">
+                <label className="block text-sm font-semibold text-warning-500 dark:text-warning-400">
                   Zoom: {scale.toFixed(1)}x
                 </label>
                 <input
@@ -315,7 +315,7 @@ export default function AvatarEditModal({
                   step="0.1"
                   value={scale}
                   onChange={(e) => setScale(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-2 bg-neutral-300 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
             </div>
@@ -344,10 +344,10 @@ export default function AvatarEditModal({
 
         {/* Delete Avatar Button - shown at bottom if avatar exists and no image selected */}
         {currentAvatarUrl && !selectedImage && onDelete && (
-          <div className="border-t border-neutral-700 pt-4">
+          <div className="border-t border-neutral-300 dark:border-neutral-700 pt-4">
             <button
               onClick={onDelete}
-              className="w-full px-4 py-3 text-sm font-semibold text-ruby-400 hover:text-ruby-300 hover:bg-ruby-500/10 rounded-lg transition-colors border-2 border-ruby-500/30 hover:border-ruby-500/50"
+              className="w-full px-4 py-3 text-sm font-semibold text-error-600 dark:text-error-400 hover:text-error-700 dark:hover:text-error-300 hover:bg-error-50 dark:hover:bg-error-500/10 rounded-lg transition-colors border-2 border-error-300 dark:border-error-500/30 hover:border-error-500 dark:hover:border-error-500/50"
             >
               Delete Current Avatar
             </button>

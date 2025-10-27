@@ -91,8 +91,7 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminClient();
 
-    // Determine the identity string we will store for the profile
-    const fallbackIdentity = `${cdpUser.userId}@cdp.houseofvoi.com`;
+    // Get the identity from CDP - email or phone
     const normalizedEmail =
       typeof cdpUser.email === 'string' && cdpUser.email.trim().length > 0
         ? cdpUser.email.trim().toLowerCase()
@@ -102,41 +101,26 @@ export async function POST(req: NextRequest) {
         ? cdpUser.phoneNumber.trim()
         : undefined;
 
-    const fetchProfileByIdentifier = async (identifier?: string) => {
-      if (!identifier) return null;
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, primary_email')
-        .eq('primary_email', identifier)
-        .maybeSingle();
-      return data ?? null;
-    };
+    const identity = normalizedEmail ?? normalizedPhone;
 
-    let profile =
-      (await fetchProfileByIdentifier(normalizedEmail)) ??
-      (await fetchProfileByIdentifier(normalizedPhone)) ??
-      (await fetchProfileByIdentifier(fallbackIdentity));
+    if (!identity) {
+      return NextResponse.json(
+        { error: 'CDP did not return email or phone number. Cannot create profile.' },
+        { status: 400 }
+      );
+    }
 
-    if (profile) {
-      // Backfill the real email if we previously stored a placeholder
-      if (normalizedEmail && profile.primary_email !== normalizedEmail) {
-        const { data: updatedProfile, error: updateError } = await supabase
-          .from('profiles')
-          .update({ primary_email: normalizedEmail })
-          .eq('id', profile.id)
-          .select('id, primary_email')
-          .single();
+    // Look up existing profile by email or phone
+    const { data: profile, error: profileFetchError } = await supabase
+      .from('profiles')
+      .select('id, primary_email')
+      .eq('primary_email', identity)
+      .maybeSingle();
 
-        if (updateError) {
-          console.warn('Failed to backfill profile email', updateError);
-        } else if (updatedProfile) {
-          profile = updatedProfile;
-        }
-      }
-    } else {
-      const identity = normalizedEmail ?? normalizedPhone ?? fallbackIdentity;
-      // New profile - join waitlist
+    let finalProfile = profile;
 
+    if (!profile) {
+      // New profile - create it
       const { data: newProfile, error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -155,7 +139,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      profile = newProfile;
+      finalProfile = newProfile;
 
       // If referral code provided, create referral relationship
       if (referralCode) {
@@ -176,7 +160,7 @@ export async function POST(req: NextRequest) {
           await supabase
             .from('referral_codes')
             .update({
-              referred_profile_id: profile.id,
+              referred_profile_id: finalProfile.id,
               converted_at: now,
               attributed_at: now,
             })
@@ -185,7 +169,7 @@ export async function POST(req: NextRequest) {
           // Create the referral relationship
           await supabase.from('referrals').insert({
             referrer_profile_id: referralValidation.referrerId,
-            referred_profile_id: profile.id,
+            referred_profile_id: finalProfile.id,
             referral_code_id: referralValidation.codeId,
             is_active: isActive,
             activated_at: isActive ? now : null,
@@ -197,7 +181,7 @@ export async function POST(req: NextRequest) {
     // Step 2: Store Base (EVM) account fetched from CDP
     await supabase.from('accounts').upsert(
       {
-        profile_id: profile.id,
+        profile_id: finalProfile.id,
         chain: 'base',
         address: baseWalletAddress,
         wallet_provider: 'coinbase-embedded',
@@ -212,7 +196,7 @@ export async function POST(req: NextRequest) {
     const { data: existingVoiAccount } = await supabase
       .from('accounts')
       .select('id, address')
-      .eq('profile_id', profile.id)
+      .eq('profile_id', finalProfile.id)
       .eq('chain', 'voi')
       .maybeSingle();
 
@@ -225,7 +209,7 @@ export async function POST(req: NextRequest) {
     // Store session metadata
     await supabase.from('sessions').insert({
       id: sessionId,
-      profile_id: profile.id,
+      profile_id: finalProfile.id,
       cdp_user_id: cdpUser.userId,
       cdp_access_token_hash: createHash('sha256').update(sessionToken).digest('hex'),
       jwt_id: null, // No longer using custom JWTs
@@ -240,7 +224,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      profileId: profile.id,
+      profileId: finalProfile.id,
       cdpUserId: cdpUser.userId,
       baseWalletAddress,
       hasLinkedAlgorand: Boolean(existingVoiAccount),

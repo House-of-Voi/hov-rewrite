@@ -43,7 +43,6 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [loadingReferrals, setLoadingReferrals] = useState(true);
-  const [hasPromptedForDisplayName, setHasPromptedForDisplayName] = useState(false);
 
   const { signOut } = useSignOut();
 
@@ -149,16 +148,6 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
     fetchReferralStats();
   }, []);
-
-  useEffect(() => {
-    const nameMissing =
-      !profile.display_name || (typeof profile.display_name === 'string' && profile.display_name.trim().length === 0);
-
-    if (!hasPromptedForDisplayName && nameMissing) {
-      setIsProfileEditModalOpen(true);
-      setHasPromptedForDisplayName(true);
-    }
-  }, [profile.display_name, hasPromptedForDisplayName]);
 
   return (
     <div className="space-y-8 max-w-4xl">

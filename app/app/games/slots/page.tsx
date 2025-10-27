@@ -67,11 +67,11 @@ export default function SlotsGame() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-black text-gold-400 neon-text uppercase flex items-center gap-3">
+          <h1 className="text-4xl font-black text-warning-500 dark:text-warning-400 neon-text uppercase flex items-center gap-3">
             <SlotMachineIcon size={48} />
             5-Reel Slots
           </h1>
-          <p className="text-neutral-400 mt-2">
+          <p className="text-tertiary mt-2">
             Match 3 or more symbols to win. Provably fair blockchain gaming.
           </p>
         </div>
@@ -86,7 +86,7 @@ export default function SlotsGame() {
         {/* Main Game Area */}
         <div className="lg:col-span-2 space-y-6">
           {/* Slot Machine */}
-          <Card glow className="bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900">
+          <Card glow className="bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
             <CardContent className="p-12">
               {/* Reels */}
               <div className="mb-8">
@@ -94,7 +94,7 @@ export default function SlotsGame() {
                   {reels.map((symbol, idx) => (
                     <div
                       key={idx}
-                      className={`aspect-square rounded-2xl bg-gradient-to-br from-gold-500/10 to-gold-600/5 border-2 border-gold-500/30 flex items-center justify-center text-6xl transition-all duration-300 ${
+                      className={`aspect-square rounded-2xl bg-gradient-to-br from-warning-500/10 to-warning-600/5 border-2 border-warning-300 dark:border-warning-500/30 flex items-center justify-center text-6xl transition-all duration-300 ${
                         spinning ? 'animate-pulse blur-sm' : 'blur-0'
                       }`}
                     >
@@ -107,10 +107,10 @@ export default function SlotsGame() {
               {/* Win Display */}
               {lastWin !== null && (
                 <div className="text-center mb-6 animate-scale-in">
-                  <div className="text-5xl font-black text-gold-400 neon-text">
+                  <div className="text-5xl font-black text-warning-500 dark:text-warning-400 neon-text">
                     +${lastWin.toFixed(2)}
                   </div>
-                  <div className="text-neutral-400 uppercase tracking-wider text-sm mt-2">
+                  <div className="text-secondary uppercase tracking-wider text-sm mt-2">
                     You Won!
                   </div>
                 </div>
@@ -133,21 +133,21 @@ export default function SlotsGame() {
           {/* Paytable */}
           <Card>
             <CardHeader>
-              <h3 className="text-xl font-bold text-gold-400 uppercase">Paytable</h3>
+              <h3 className="text-xl font-bold text-warning-500 dark:text-warning-400 uppercase">Paytable</h3>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="p-4 border border-gold-900/20 rounded-lg">
+                <div className="p-4 border border-warning-200 dark:border-warning-900/20 rounded-lg">
                   <div className="text-3xl mb-2">🍒🍒🍒</div>
-                  <div className="text-gold-400 font-bold">3x Bet</div>
+                  <div className="text-warning-500 dark:text-warning-400 font-bold">3x Bet</div>
                 </div>
-                <div className="p-4 border border-gold-900/20 rounded-lg">
+                <div className="p-4 border border-warning-200 dark:border-warning-900/20 rounded-lg">
                   <div className="text-3xl mb-2">🍇🍇🍇🍇</div>
-                  <div className="text-gold-400 font-bold">10x Bet</div>
+                  <div className="text-warning-500 dark:text-warning-400 font-bold">10x Bet</div>
                 </div>
-                <div className="p-4 border border-gold-900/20 rounded-lg">
+                <div className="p-4 border border-warning-200 dark:border-warning-900/20 rounded-lg">
                   <div className="text-3xl mb-2">💎💎💎💎💎</div>
-                  <div className="text-gold-400 font-bold">50x Bet</div>
+                  <div className="text-warning-500 dark:text-warning-400 font-bold">50x Bet</div>
                 </div>
               </div>
             </CardContent>
@@ -159,17 +159,17 @@ export default function SlotsGame() {
           {/* Balance Card */}
           <Card glow>
             <CardHeader>
-              <h3 className="text-lg font-bold text-gold-400 uppercase flex items-center gap-2">
+              <h3 className="text-lg font-bold text-warning-500 dark:text-warning-400 uppercase flex items-center gap-2">
                 <CoinsIcon size={20} />
                 Balance
               </h3>
             </CardHeader>
             <CardContent>
               <div className="text-center py-4">
-                <div className="text-4xl font-black text-gold-400 mb-2">
+                <div className="text-4xl font-black text-warning-500 dark:text-warning-400 mb-2">
                   ${balance.toFixed(2)}
                 </div>
-                <div className="text-xs text-neutral-500 uppercase tracking-wider">
+                <div className="text-xs text-neutral-600 dark:text-neutral-500 uppercase tracking-wider">
                   {chain} Network
                 </div>
               </div>
@@ -179,7 +179,7 @@ export default function SlotsGame() {
           {/* Bet Controls */}
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-bold text-gold-400 uppercase">Bet Amount</h3>
+              <h3 className="text-lg font-bold text-warning-500 dark:text-warning-400 uppercase">Bet Amount</h3>
             </CardHeader>
             <CardContent className="space-y-4">
               <Input
@@ -198,7 +198,7 @@ export default function SlotsGame() {
                   <button
                     key={amount}
                     onClick={() => setBetAmount(amount)}
-                    className="px-3 py-2 text-sm border-2 border-gold-500/30 text-gold-400 rounded-lg hover:bg-gold-500/10 transition-colors font-bold"
+                    className="px-3 py-2 text-sm border-2 border-warning-300 dark:border-warning-500/30 text-warning-600 dark:text-warning-400 rounded-lg hover:bg-warning-50 dark:hover:bg-warning-500/10 transition-colors font-bold"
                   >
                     ${amount}
                   </button>
@@ -207,7 +207,7 @@ export default function SlotsGame() {
 
               {/* Chain Selector */}
               <div>
-                <label className="block text-sm font-medium text-gold-400 mb-2" htmlFor="network">
+                <label className="block text-sm font-medium text-warning-500 dark:text-warning-400 mb-2" htmlFor="network">
                   Network
                 </label>
                 <select
@@ -219,7 +219,7 @@ export default function SlotsGame() {
                       setChain(selectedChain);
                     }
                   }}
-                  className="w-full rounded-xl border-2 border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-neutral-100 transition-all focus:border-gold-500 focus:ring-2 focus:ring-gold-500"
+                  className="w-full rounded-xl border-2 border-neutral-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-3 text-sm text-neutral-800 dark:text-neutral-100 transition-all focus:border-warning-500 focus:ring-2 focus:ring-warning-500"
                 >
                   <option value="base">Base</option>
                   <option value="voi">Voi</option>
@@ -232,20 +232,20 @@ export default function SlotsGame() {
           {/* Game Info */}
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-bold text-gold-400 uppercase">Game Info</h3>
+              <h3 className="text-lg font-bold text-warning-500 dark:text-warning-400 uppercase">Game Info</h3>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between py-2 border-b border-gold-900/20">
-                <span className="text-neutral-500">RTP:</span>
-                <span className="text-neutral-300 font-semibold">98.0%</span>
+              <div className="flex justify-between py-2 border-b border-warning-200 dark:border-warning-900/20">
+                <span className="text-tertiary">RTP:</span>
+                <span className="text-secondary font-semibold">98.0%</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-gold-900/20">
-                <span className="text-neutral-500">House Edge:</span>
-                <span className="text-neutral-300 font-semibold">2.0%</span>
+              <div className="flex justify-between py-2 border-b border-warning-200 dark:border-warning-900/20">
+                <span className="text-tertiary">House Edge:</span>
+                <span className="text-secondary font-semibold">2.0%</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-neutral-500">Max Payout:</span>
-                <span className="text-neutral-300 font-semibold">50x Bet</span>
+                <span className="text-tertiary">Max Payout:</span>
+                <span className="text-secondary font-semibold">50x Bet</span>
               </div>
             </CardContent>
           </Card>
@@ -253,13 +253,13 @@ export default function SlotsGame() {
           {/* Provably Fair */}
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-bold text-gold-400 uppercase">Provably Fair</h3>
+              <h3 className="text-lg font-bold text-warning-500 dark:text-warning-400 uppercase">Provably Fair</h3>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-neutral-500 mb-3">
+              <p className="text-xs text-tertiary mb-3">
                 Every spin is verifiable on-chain. Your seed:
               </p>
-              <code className="block text-xs font-mono text-neutral-400 bg-neutral-900 p-3 rounded-lg break-all border border-gold-900/20">
+              <code className="block text-xs font-mono text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-900 p-3 rounded-lg break-all border border-warning-200 dark:border-warning-900/20">
                 0x7a8b9c...placeholder
               </code>
             </CardContent>

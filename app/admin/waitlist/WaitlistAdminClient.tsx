@@ -67,10 +67,10 @@ export default function WaitlistAdminClient({
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">
+          <h1 className="text-4xl font-black text-warning-500 dark:text-warning-400 neon-text uppercase">
             Waitlist Management
           </h1>
-          <p className="text-neutral-400 mt-2">
+          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
             Approve users for game access
           </p>
         </div>
@@ -86,8 +86,8 @@ export default function WaitlistAdminClient({
         <div
           className={`p-6 rounded-xl text-center font-semibold text-lg ${
             status.type === 'success'
-              ? 'bg-green-500/20 text-green-400 border-2 border-green-500/30'
-              : 'bg-ruby-500/20 text-ruby-400 border-2 border-ruby-500/30'
+              ? 'bg-success-100 dark:bg-success-500/20 text-success-600 dark:text-success-400 border-2 border-success-300 dark:border-success-500/30'
+              : 'bg-error-100 dark:bg-error-500/20 text-error-600 dark:text-error-400 border-2 border-error-300 dark:border-error-500/30'
           }`}
         >
           {status.message}
@@ -98,10 +98,10 @@ export default function WaitlistAdminClient({
       <div className="grid md:grid-cols-2 gap-6">
         <Card glow>
           <CardContent className="p-8 text-center">
-            <div className="text-5xl font-black text-gold-400 mb-2">
+            <div className="text-5xl font-black text-warning-500 dark:text-warning-400 mb-2">
               {waitlistUsers.length}
             </div>
-            <div className="text-neutral-400 uppercase tracking-wider text-sm">
+            <div className="text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-sm">
               On Waitlist
             </div>
           </CardContent>
@@ -109,10 +109,10 @@ export default function WaitlistAdminClient({
 
         <Card glow>
           <CardContent className="p-8 text-center">
-            <div className="text-5xl font-black text-green-400 mb-2">
+            <div className="text-5xl font-black text-success-600 dark:text-success-400 mb-2">
               {approvedCount}
             </div>
-            <div className="text-neutral-400 uppercase tracking-wider text-sm">
+            <div className="text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-sm">
               Approved Users
             </div>
           </CardContent>
@@ -122,47 +122,47 @@ export default function WaitlistAdminClient({
       {/* Waitlist Table */}
       <Card>
         <CardHeader>
-          <h2 className="text-2xl font-bold text-gold-400 uppercase">Pending Approval</h2>
+          <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">Pending Approval</h2>
         </CardHeader>
         <CardContent>
           {waitlistUsers.length === 0 ? (
-            <div className="text-center py-12 text-neutral-500">
+            <div className="text-center py-12 text-neutral-600 dark:text-neutral-500">
               No users on waitlist
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gold-900/20">
-                    <th className="text-left py-3 px-4 text-neutral-400 font-semibold uppercase text-sm">
+                  <tr className="border-b border-warning-200 dark:border-warning-900/20">
+                    <th className="text-left py-3 px-4 text-neutral-600 dark:text-neutral-400 font-semibold uppercase text-sm">
                       User
                     </th>
-                    <th className="text-left py-3 px-4 text-neutral-400 font-semibold uppercase text-sm">
+                    <th className="text-left py-3 px-4 text-neutral-600 dark:text-neutral-400 font-semibold uppercase text-sm">
                       Joined
                     </th>
-                    <th className="text-left py-3 px-4 text-neutral-400 font-semibold uppercase text-sm">
+                    <th className="text-left py-3 px-4 text-neutral-600 dark:text-neutral-400 font-semibold uppercase text-sm">
                       Referral
                     </th>
-                    <th className="text-left py-3 px-4 text-neutral-400 font-semibold uppercase text-sm">
+                    <th className="text-left py-3 px-4 text-neutral-600 dark:text-neutral-400 font-semibold uppercase text-sm">
                       Position
                     </th>
-                    <th className="text-right py-3 px-4 text-neutral-400 font-semibold uppercase text-sm">
+                    <th className="text-right py-3 px-4 text-neutral-600 dark:text-neutral-400 font-semibold uppercase text-sm">
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {waitlistUsers.map((user) => (
-                    <tr key={user.id} className="border-b border-gold-900/10 hover:bg-gold-500/5">
+                    <tr key={user.id} className="border-b border-warning-200/20 dark:border-warning-900/10 hover:bg-warning-50 dark:hover:bg-warning-500/5">
                       <td className="py-4 px-4">
-                        <div className="font-semibold text-neutral-200">
+                        <div className="font-semibold text-neutral-800 dark:text-neutral-200">
                           {user.display_name || user.primary_email}
                         </div>
                         {user.display_name && (
-                          <div className="text-sm text-neutral-500">{user.primary_email}</div>
+                          <div className="text-sm text-neutral-600 dark:text-neutral-500">{user.primary_email}</div>
                         )}
                       </td>
-                      <td className="py-4 px-4 text-neutral-400">
+                      <td className="py-4 px-4 text-neutral-600 dark:text-neutral-400">
                         {user.waitlist_joined_at
                           ? new Date(user.waitlist_joined_at).toLocaleDateString()
                           : new Date(user.created_at).toLocaleDateString()}
@@ -170,20 +170,20 @@ export default function WaitlistAdminClient({
                       <td className="py-4 px-4">
                         {user.referral ? (
                           <div>
-                            <div className="text-sm text-neutral-300">{user.referral.referrerName}</div>
+                            <div className="text-sm text-neutral-700 dark:text-neutral-300">{user.referral.referrerName}</div>
                             <div
                               className={`text-xs mt-1 ${
-                                user.referral.isActive ? 'text-green-400' : 'text-yellow-400'
+                                user.referral.isActive ? 'text-success-600 dark:text-success-400' : 'text-warning-600 dark:text-warning-400'
                               }`}
                             >
                               {user.referral.isActive ? 'Active' : 'Inactive'}
                             </div>
                           </div>
                         ) : (
-                          <span className="text-neutral-600">No referral</span>
+                          <span className="text-neutral-600 dark:text-neutral-500">No referral</span>
                         )}
                       </td>
-                      <td className="py-4 px-4 text-neutral-400">
+                      <td className="py-4 px-4 text-neutral-600 dark:text-neutral-400">
                         {user.waitlist_position || '—'}
                       </td>
                       <td className="py-4 px-4 text-right">

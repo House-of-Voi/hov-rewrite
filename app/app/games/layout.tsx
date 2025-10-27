@@ -19,7 +19,7 @@ export default async function GamesLayout({
   const access = await hasGameAccess();
 
   if (!access) {
-    // User is authenticated but on waitlist - show inline waitlist status
+    // User is authenticated but on waitlist - show inline waitlist status above games
     const supabase = createAdminClient();
 
     // Get profile with waitlist info
@@ -51,6 +51,7 @@ export default async function GamesLayout({
           totalOnWaitlist={waitlistCount || 0}
           showFullLink={true}
         />
+        {children}
       </div>
     );
   }

@@ -19,11 +19,11 @@ export function PlayerStatsCard({
 }: PlayerStatsCardProps) {
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-br from-neutral-900/50 to-neutral-950 border border-gold-900/20 rounded-xl p-6 animate-pulse">
-        <div className="h-4 bg-gold-900/20 rounded w-32 mb-4"></div>
+      <div className="bg-gradient-to-br from-neutral-100 dark:from-neutral-900/50 to-neutral-200 dark:to-neutral-950 border border-warning-200 dark:border-warning-900/20 rounded-xl p-6 animate-pulse">
+        <div className="h-4 bg-warning-200 dark:bg-warning-900/20 rounded w-32 mb-4"></div>
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-3 bg-gold-900/20 rounded w-full"></div>
+            <div key={i} className="h-3 bg-warning-200 dark:bg-warning-900/20 rounded w-full"></div>
           ))}
         </div>
       </div>
@@ -32,8 +32,8 @@ export function PlayerStatsCard({
 
   if (!stats) {
     return (
-      <div className="bg-gradient-to-br from-neutral-900/50 to-neutral-950 border border-gold-900/20 rounded-xl p-6">
-        <p className="text-neutral-400 text-sm">
+      <div className="bg-gradient-to-br from-neutral-100 dark:from-neutral-900/50 to-neutral-200 dark:to-neutral-950 border border-warning-200 dark:border-warning-900/20 rounded-xl p-6">
+        <p className="text-neutral-600 dark:text-neutral-400 text-sm">
           No statistics available for {showAddress ? address : 'this address'}
         </p>
       </div>
@@ -44,9 +44,9 @@ export function PlayerStatsCard({
   const winRate = parseFloat(stats.win_rate.toString());
 
   return (
-    <div className="bg-gradient-to-br from-neutral-900/50 to-neutral-950 border border-gold-900/20 rounded-xl p-6 hover:border-gold-900/40 transition-all">
+    <div className="bg-gradient-to-br from-neutral-100 dark:from-neutral-900/50 to-neutral-200 dark:to-neutral-950 border border-warning-200 dark:border-warning-900/20 rounded-xl p-6 hover:border-warning-300 dark:hover:border-warning-900/40 transition-all">
       {showAddress && (
-        <p className="text-neutral-500 text-xs font-mono mb-4 truncate">
+        <p className="text-neutral-600 dark:text-neutral-500 text-xs font-mono mb-4 truncate">
           {address}
         </p>
       )}
@@ -54,20 +54,20 @@ export function PlayerStatsCard({
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-neutral-500 text-xs mb-1">Total Spins</p>
-            <p className="text-xl font-bold text-gold-400">
+            <p className="text-neutral-600 dark:text-neutral-500 text-xs mb-1">Total Spins</p>
+            <p className="text-xl font-bold text-warning-500 dark:text-warning-400">
               {formatNumberCompact(stats.total_spins)}
             </p>
           </div>
           <div>
-            <p className="text-neutral-500 text-xs mb-1">Win Rate</p>
-            <p className="text-xl font-bold text-gold-400">
+            <p className="text-neutral-600 dark:text-neutral-500 text-xs mb-1">Win Rate</p>
+            <p className="text-xl font-bold text-warning-500 dark:text-warning-400">
               {winRate.toFixed(2)}%
             </p>
           </div>
         </div>
 
-        <div className="border-t border-gold-900/20 pt-4">
+        <div className="border-t border-warning-200 dark:border-warning-900/20 pt-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-neutral-600 text-xs mb-1">Total Wagered</p>
@@ -84,9 +84,9 @@ export function PlayerStatsCard({
           </div>
         </div>
 
-        <div className="border-t border-gold-900/20 pt-4">
+        <div className="border-t border-warning-200 dark:border-warning-900/20 pt-4">
           <div className="flex justify-between items-center">
-            <p className="text-neutral-600 text-xs">Net Result</p>
+            <p className="text-neutral-600 dark:text-neutral-500 text-xs">Net Result</p>
             <p
               className={`font-bold ${
                 BigInt(stats.net_result) >= 0n
@@ -102,7 +102,7 @@ export function PlayerStatsCard({
 
         <div className="border-t border-gold-900/20 pt-4 grid grid-cols-2 gap-4 text-xs">
           <div>
-            <p className="text-neutral-600 mb-1">RTP</p>
+            <p className="text-neutral-600 dark:text-neutral-500 mb-1">RTP</p>
             <p
               className={`font-semibold ${
                 rtp >= 96.5 ? 'text-emerald-400' : 'text-orange-400'
@@ -112,8 +112,8 @@ export function PlayerStatsCard({
             </p>
           </div>
           <div>
-            <p className="text-neutral-600 mb-1">Largest Win</p>
-            <p className="text-gold-400 font-semibold">
+            <p className="text-neutral-600 dark:text-neutral-500 mb-1">Largest Win</p>
+            <p className="text-warning-500 dark:text-warning-400 font-semibold">
               {formatVoi(stats.largest_win, 2)} VOI
             </p>
           </div>
@@ -121,7 +121,7 @@ export function PlayerStatsCard({
 
         <div className="border-t border-gold-900/20 pt-4 grid grid-cols-2 gap-4 text-xs">
           <div>
-            <p className="text-neutral-600 mb-1">Winning Spins</p>
+            <p className="text-neutral-600 dark:text-neutral-500 mb-1">Winning Spins</p>
             <p className="text-emerald-400 font-semibold">
               {formatNumberCompact(stats.winning_spins)}
             </p>

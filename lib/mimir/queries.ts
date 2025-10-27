@@ -16,9 +16,8 @@ export async function getPlayerStats(
     p_player_address: address,
   };
 
-  if (contractId !== undefined) {
-    params.p_app_id = contractId;
-  }
+  // Always include p_app_id - use provided contractId or default
+  params.p_app_id = contractId !== undefined ? contractId : DEFAULT_CONTRACT_ID;
 
   try {
     return await mimirRpc<MimirPlayerStats>('get_player_stats', params);
@@ -34,11 +33,10 @@ export async function getPlayerStats(
 export async function getPlatformStats(
   contractId?: number
 ): Promise<MimirPlatformStats[]> {
-  // Build params object, only including contractId if it's provided
-  const params: Record<string, unknown> = {};
-  if (contractId !== undefined) {
-    params.p_app_id = contractId;
-  }
+  // Build params object, always including p_app_id
+  const params: Record<string, unknown> = {
+    p_app_id: contractId !== undefined ? contractId : DEFAULT_CONTRACT_ID,
+  };
 
   // Call get_hov_platform_stats which returns a TABLE
   // PostgREST returns this as an array of objects
@@ -63,8 +61,6 @@ export async function getPlatformStatsByRounds(
 
   // get_hov_platform_stats returns a TABLE, PostgREST returns it as an array
   const result = await mimirRpc<MimirPlatformStats[]>('get_hov_platform_stats', params);
-
-  // Return the first row
   return result[0];
 }
 
@@ -82,6 +78,9 @@ export async function getPlatformStatsByDate(
 }
 
 export type LeaderboardRankBy = 'won' | 'profit' | 'rtp' | 'volume';
+
+// Default contract ID for Alpha Slots
+const DEFAULT_CONTRACT_ID = 40879920;
 
 export async function getLeaderboard(options: {
   contractId?: number;
@@ -109,19 +108,11 @@ export async function getLeaderboard(options: {
     p_offset: 0,
   };
 
-  if (contractId !== undefined) {
-    params.p_app_id = contractId;
-  }
+  // Always include p_app_id - use provided contractId or default
+  params.p_app_id = contractId !== undefined ? contractId : DEFAULT_CONTRACT_ID;
 
-  try {
-    return await mimirRpc<MimirLeaderboardEntry[]>('get_leaderboard', params);
-  } catch (error) {
-    if (isFunctionMissing(error)) {
-      return mimirRpc<MimirLeaderboardEntry[]>('get_hov_leaderboard', params);
-    }
-
-    throw error;
-  }
+  // Call get_hov_leaderboard directly since get_leaderboard doesn't exist
+  return await mimirRpc<MimirLeaderboardEntry[]>('get_hov_leaderboard', params);
 }
 
 export async function getPlayerSpins(
@@ -136,9 +127,8 @@ export async function getPlayerSpins(
     p_offset: offset,
   };
 
-  if (contractId !== undefined) {
-    params.p_app_id = contractId;
-  }
+  // Always include p_app_id - use provided contractId or default
+  params.p_app_id = contractId !== undefined ? contractId : DEFAULT_CONTRACT_ID;
 
   try {
     return await mimirRpc<MimirSpinEvent[]>('get_player_spins', params);

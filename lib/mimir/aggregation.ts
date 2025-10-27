@@ -65,6 +65,44 @@ export async function getAggregatedProfileStatsSafe(
   return aggregatePlayerStats(validAddresses, validStats);
 }
 
+function toBigInt(value: string | number | bigint | null | undefined): bigint {
+  if (value === null || value === undefined) {
+    return 0n;
+  }
+
+  if (typeof value === 'bigint') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      return 0n;
+    }
+    return BigInt(Math.trunc(value));
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed === '') {
+      return 0n;
+    }
+
+    try {
+      return BigInt(trimmed);
+    } catch (error) {
+      const asNumber = Number(trimmed);
+      if (Number.isFinite(asNumber)) {
+        return BigInt(Math.trunc(asNumber));
+      }
+
+      console.warn('Failed to parse BigInt from string', trimmed, error);
+      return 0n;
+    }
+  }
+
+  return 0n;
+}
+
 function aggregatePlayerStats(
   addresses: string[],
   stats: MimirPlayerStats[]
@@ -77,13 +115,13 @@ function aggregatePlayerStats(
   let largestWin = BigInt(0);
 
   for (const entry of stats) {
-    totalSpins += entry.total_spins;
-    winningSpins += entry.winning_spins;
-    losingSpins += entry.losing_spins;
-    totalBet += BigInt(entry.total_bet);
-    totalWon += BigInt(entry.total_won);
+    totalSpins += entry.total_spins ?? 0;
+    winningSpins += entry.winning_spins ?? 0;
+    losingSpins += entry.losing_spins ?? 0;
+    totalBet += toBigInt(entry.total_bet);
+    totalWon += toBigInt(entry.total_won);
 
-    const entryLargestWin = BigInt(entry.largest_win);
+    const entryLargestWin = toBigInt(entry.largest_win);
     if (entryLargestWin > largestWin) {
       largestWin = entryLargestWin;
     }

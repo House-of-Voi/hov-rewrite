@@ -21,14 +21,20 @@ export async function getRoundRangeForDateRange(
       return {};
     }
 
-    const rounds = data.map((row) => row.round as number);
+    const firstRound = data[0]?.round;
+    const lastRound = data[data.length - 1]?.round;
+
+    if (typeof firstRound !== 'number' || typeof lastRound !== 'number') {
+      console.error('Unexpected round values returned from block_header query');
+      return {};
+    }
+
     return {
-      startRound: Math.min(...rounds),
-      endRound: Math.max(...rounds),
+      startRound: firstRound,
+      endRound: lastRound,
     };
   } catch (error) {
     console.error('Error getting round range:', error);
     return {};
   }
 }
-

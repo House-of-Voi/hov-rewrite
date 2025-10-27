@@ -16,9 +16,21 @@ export async function uploadAvatar(
   try {
     const supabase = createAdminClient();
 
+    // Detect file type and extension
+    const fileType = file.type || 'image/webp';
+    let extension = 'webp';
+
+    if (fileType.includes('svg')) {
+      extension = 'svg';
+    } else if (fileType.includes('png')) {
+      extension = 'png';
+    } else if (fileType.includes('jpeg') || fileType.includes('jpg')) {
+      extension = 'jpg';
+    }
+
     // Generate unique filename
     const timestamp = Date.now();
-    const filename = `${profileId}_${timestamp}.webp`;
+    const filename = `${profileId}_${timestamp}.${extension}`;
     const filePath = `${filename}`;
 
     // Upload to Supabase Storage
@@ -27,7 +39,7 @@ export async function uploadAvatar(
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
-        contentType: 'image/webp',
+        contentType: fileType,
       });
 
     if (error) {

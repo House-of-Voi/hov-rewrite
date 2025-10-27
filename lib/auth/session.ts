@@ -12,6 +12,8 @@ export interface SessionInfo {
   jti?: string; // For backward compatibility
   profileId: string; // Alias for sub for clarity
   gameAccessGranted?: boolean;
+  displayName?: string | null;
+  primaryEmail?: string;
 }
 
 export async function getServerSessionFromRequest(): Promise<SessionInfo | null> {
@@ -42,10 +44,10 @@ export async function getServerSessionFromRequest(): Promise<SessionInfo | null>
       return null;
     }
 
-    // Get profile to check game access
+    // Get profile to check game access and display name
     const { data: profile } = await supabase
       .from('profiles')
-      .select('game_access_granted')
+      .select('game_access_granted, display_name, primary_email')
       .eq('id', session.profile_id)
       .single();
 
@@ -63,6 +65,8 @@ export async function getServerSessionFromRequest(): Promise<SessionInfo | null>
       cdpUserId: session.cdp_user_id,
       baseWalletAddress: baseAccount?.address,
       gameAccessGranted: profile?.game_access_granted || false,
+      displayName: profile?.display_name,
+      primaryEmail: profile?.primary_email,
     };
   } catch (error) {
     console.error('Session validation error:', error);

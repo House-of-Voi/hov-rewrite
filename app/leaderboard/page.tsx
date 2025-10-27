@@ -23,23 +23,23 @@ export default function LeaderboardPage() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-r from-gold-500/10 to-gold-600/5 border border-gold-900/20 rounded-xl p-6">
+        <div className="bg-gradient-to-r from-warning-500/10 to-warning-600/5 border border-warning-200 dark:border-warning-900/20 rounded-xl p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <p className="text-gold-400 font-semibold mb-2">🎰 Alpha Slots</p>
-              <p className="text-neutral-400 text-sm">
+              <p className="text-warning-500 dark:text-warning-400 font-semibold mb-2">🎰 Alpha Slots</p>
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                 The original House of Voi slot machine. Classic gameplay, massive jackpots.
               </p>
             </div>
             <div>
-              <p className="text-gold-400 font-semibold mb-2">⚙️ 5 Reels × 20 Paylines</p>
-              <p className="text-neutral-400 text-sm">
+              <p className="text-warning-500 dark:text-warning-400 font-semibold mb-2">⚙️ 5 Reels × 20 Paylines</p>
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                 96.5% RTP target ensures fair gameplay and exciting wins.
               </p>
             </div>
             <div>
-              <p className="text-gold-400 font-semibold mb-2">📊 Real-Time Rankings</p>
-              <p className="text-neutral-400 text-sm">
+              <p className="text-warning-500 dark:text-warning-400 font-semibold mb-2">📊 Real-Time Rankings</p>
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                 Rankings update every 5 minutes based on blockchain data.
               </p>
             </div>
@@ -89,14 +89,14 @@ export default function LeaderboardPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-gold-500/10 via-gold-600/5 to-gold-700/5 border border-gold-900/20 rounded-xl p-8 text-center">
-        <h2 className="text-2xl font-bold text-gold-400 mb-4">Ready to Play?</h2>
-        <p className="text-neutral-400 mb-6 max-w-2xl mx-auto">
+      <section className="bg-gradient-to-r from-warning-500/10 via-warning-600/5 to-warning-700/5 border border-warning-200 dark:border-warning-900/20 rounded-xl p-8 text-center">
+        <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 mb-4">Ready to Play?</h2>
+        <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-2xl mx-auto">
           Test your luck at House of Voi and climb the leaderboard. Every spin is recorded on-chain and contributes to your ranking.
         </p>
         <a
           href="/app/games/slots"
-          className="inline-block px-8 py-3 bg-gold-600 hover:bg-gold-500 text-neutral-950 font-bold rounded-lg transition-all"
+          className="inline-block px-8 py-3 bg-warning-600 hover:bg-warning-500 text-white font-bold rounded-lg transition-all"
         >
           Play Now
         </a>

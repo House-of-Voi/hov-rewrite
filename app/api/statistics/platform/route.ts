@@ -54,15 +54,13 @@ export async function GET(request: NextRequest) {
     let mimirStats: Awaited<ReturnType<typeof getPlatformStats>>;
 
     if (query.timeframe === 'daily' && targetDate) {
-      // Convert date to round range using block_header
-      const startOfDay = new Date(targetDate);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(targetDate);
-      endOfDay.setHours(23, 59, 59, 999);
+      // For daily stats, get the last 24 hours of data instead of a specific date
+      const now = new Date();
+      const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       const roundRange = await getRoundRangeForDateRange(
-        startOfDay,
-        endOfDay
+        last24Hours,
+        now
       );
 
       if (roundRange.startRound && roundRange.endRound) {
@@ -94,6 +92,7 @@ export async function GET(request: NextRequest) {
         chain: (config?.chain as PlatformStatResponse['chain']) ?? null,
       };
     });
+
 
     appCache.set(cacheKey, enriched, CacheTTL.PLATFORM_STATS);
 

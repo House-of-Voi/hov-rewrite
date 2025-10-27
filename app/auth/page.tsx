@@ -62,7 +62,6 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
-  const [referralCode, setReferralCode] = useState('');
   const [flowId, setFlowId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -328,7 +327,6 @@ export default function AuthPage() {
           cdpUserId:
             user.userId || (user as unknown as { id?: string }).id || undefined,
           walletAddress,
-          referralCode: referralCode || undefined,
         }),
       });
 
@@ -381,17 +379,7 @@ export default function AuthPage() {
 
       setLoading(false);
     }
-  }, [exportEvmAccount, evmAddress, getAccessToken, referralCode, router]);
-
-  // Load referral code from cookie on mount
-  useEffect(() => {
-    const cookies = document.cookie.split(';');
-    const refCookie = cookies.find(c => c.trim().startsWith('hov_ref='));
-    if (refCookie) {
-      const code = refCookie.split('=')[1];
-      setReferralCode(code.toUpperCase());
-    }
-  }, []);
+  }, [exportEvmAccount, evmAddress, getAccessToken, router]);
 
   // Handle existing CDP sessions (OAuth or returning users)
   useEffect(() => {
@@ -412,10 +400,10 @@ export default function AuthPage() {
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">
+          <h1 className="text-4xl font-black text-warning-500 dark:text-warning-400 neon-text uppercase">
             Welcome
           </h1>
-          <p className="text-neutral-400">
+          <p className="text-neutral-600 dark:text-neutral-400">
             Sign in or create your account
           </p>
         </div>
@@ -424,10 +412,10 @@ export default function AuthPage() {
         {status && (
           <div className={`p-4 rounded-xl text-center font-semibold ${
             status.includes('Success')
-              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+              ? 'bg-success-100 dark:bg-success-500/20 text-success-600 dark:text-success-400 border border-success-300 dark:border-success-500/30'
               : status.includes('Error') || status.includes('failed') || status.includes('Failed')
-              ? 'bg-ruby-500/20 text-ruby-400 border border-ruby-500/30'
-              : 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
+              ? 'bg-error-100 dark:bg-error-500/20 text-error-600 dark:text-error-400 border border-error-300 dark:border-error-500/30'
+              : 'bg-warning-100 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400 border border-warning-300 dark:border-warning-500/30'
           }`}>
             {status}
           </div>
@@ -460,10 +448,10 @@ export default function AuthPage() {
                 {/* Divider */}
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gold-900/30"></div>
+                    <div className="w-full border-t border-warning-200 dark:border-warning-900/30"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-neutral-950 text-neutral-500">or</span>
+                    <span className="px-4 bg-white dark:bg-neutral-950 text-neutral-600 dark:text-neutral-500">or</span>
                   </div>
                 </div>
 
@@ -520,7 +508,7 @@ export default function AuthPage() {
                   <button
                     onClick={() => setInputMode(inputMode === 'email' ? 'phone' : 'email')}
                     disabled={loading}
-                    className="w-full text-center text-sm text-neutral-500 hover:text-neutral-400 underline"
+                    className="w-full text-center text-sm text-neutral-600 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-400 underline"
                   >
                     {inputMode === 'email' ? 'Use phone number instead' : 'Use email instead'}
                   </button>
@@ -531,11 +519,11 @@ export default function AuthPage() {
               <div className="space-y-6">
                 <div className="text-center space-y-2">
                   <div className="text-5xl mb-4">📧</div>
-                  <h2 className="text-xl font-bold text-gold-400">Check your {authMethod === 'email' ? 'email' : 'phone'}</h2>
-                  <p className="text-neutral-400 text-sm">
+                  <h2 className="text-xl font-bold text-warning-500 dark:text-warning-400">Check your {authMethod === 'email' ? 'email' : 'phone'}</h2>
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                     We sent a verification code to
                   </p>
-                  <p className="text-gold-400 font-semibold">
+                  <p className="text-warning-500 dark:text-warning-400 font-semibold">
                     {authMethod === 'email' ? email : phone}
                   </p>
                 </div>
@@ -570,7 +558,7 @@ export default function AuthPage() {
                     setStatus(null);
                   }}
                   disabled={loading}
-                  className="w-full text-center text-sm text-neutral-500 hover:text-neutral-400 underline"
+                  className="w-full text-center text-sm text-neutral-600 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-400 underline"
                 >
                   ← Use a different method
                 </button>
@@ -580,7 +568,7 @@ export default function AuthPage() {
         </Card>
 
         {/* Footer Info */}
-        <p className="text-center text-xs text-neutral-600">
+        <p className="text-center text-xs text-neutral-600 dark:text-neutral-500">
           By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

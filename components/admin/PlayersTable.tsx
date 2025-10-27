@@ -111,7 +111,7 @@ export default function PlayersTable() {
     return (
       <Card>
         <CardContent>
-          <div className="text-ruby-400 p-4">{error}</div>
+          <div className="text-error-600 dark:text-error-400 p-4">{error}</div>
         </CardContent>
       </Card>
     );
@@ -265,7 +265,7 @@ export default function PlayersTable() {
                         </td>
                         <td className="px-6 py-4">
                           {player.game_access_granted ? (
-                            <span className="px-2 py-1 text-xs font-bold rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+                            <span className="px-2 py-1 text-xs font-bold rounded-full bg-success-100 dark:bg-success-500/20 text-success-600 dark:text-success-400 border border-success-300 dark:border-success-500/30">
                               GRANTED
                             </span>
                           ) : player.waitlist_position !== null ? (
@@ -273,12 +273,12 @@ export default function PlayersTable() {
                               WAITLIST #{player.waitlist_position}
                             </span>
                           ) : (
-                            <span className="px-2 py-1 text-xs font-bold rounded-full bg-neutral-700/50 text-neutral-400 border border-neutral-600/30">
+                            <span className="px-2 py-1 text-xs font-bold rounded-full bg-neutral-200 dark:bg-neutral-700/50 text-neutral-700 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600/30">
                               NO ACCESS
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-sm text-neutral-400">
+                        <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
                           <div>{player.total_plays || 0} plays</div>
                           <div className="text-xs">{formatNumberCompact(parseFloat(player.total_wagered || '0'))} wagered</div>
                         </td>

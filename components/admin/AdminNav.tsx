@@ -58,9 +58,9 @@ export default function AdminNav({ role, permissions }: AdminNavProps) {
   ];
 
   const roleColors = {
-    owner: 'bg-gold-500/20 text-gold-400 border-gold-500/30',
-    operator: 'bg-royal-500/20 text-royal-400 border-royal-500/30',
-    viewer: 'bg-neutral-700/50 text-neutral-300 border-neutral-600/30',
+    owner: 'bg-warning-100 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400 border-warning-300 dark:border-warning-500/30',
+    operator: 'bg-primary-100 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400 border-primary-300 dark:border-primary-500/30',
+    viewer: 'bg-neutral-200 dark:bg-neutral-700/50 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-600/30',
   };
 
   const roleLabels = {
@@ -70,13 +70,13 @@ export default function AdminNav({ role, permissions }: AdminNavProps) {
   };
 
   return (
-    <nav className="glass-casino border-b border-gold-900/20 sticky top-0 z-50">
+    <nav className="glass-casino border-b border-warning-200 dark:border-warning-900/20 sticky top-16 z-40 bg-neutral-50/95 dark:bg-neutral-900/95 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <div className="flex items-center space-x-8">
             <Link href="/admin" className="flex items-center space-x-2 group">
-              <span className="text-xl font-black text-gold-400 group-hover:text-gold-300 transition-colors neon-text uppercase tracking-wider">
+              <span className="text-xl font-black text-warning-500 dark:text-warning-400 group-hover:text-warning-600 dark:group-hover:text-warning-300 transition-colors neon-text uppercase tracking-wider">
                 🎰 Admin
               </span>
             </Link>
@@ -96,8 +96,8 @@ export default function AdminNav({ role, permissions }: AdminNavProps) {
                       href={item.href}
                       className={`px-4 py-2 rounded-lg text-sm font-bold transition-all uppercase tracking-wide ${
                         isActive
-                          ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
-                          : 'text-neutral-400 hover:text-gold-400 hover:bg-gold-500/5'
+                          ? 'bg-warning-100 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400 border border-warning-300 dark:border-warning-500/30'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:text-warning-600 dark:hover:text-warning-400 hover:bg-warning-50 dark:hover:bg-warning-500/5'
                       }`}
                     >
                       {item.label}
@@ -117,7 +117,7 @@ export default function AdminNav({ role, permissions }: AdminNavProps) {
 
             <Link
               href="/app"
-              className="text-sm text-neutral-400 hover:text-gold-400 font-bold transition-colors uppercase tracking-wide"
+              className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-warning-600 dark:hover:text-warning-400 font-bold transition-colors uppercase tracking-wide"
             >
               Exit
             </Link>
@@ -140,8 +140,8 @@ export default function AdminNav({ role, permissions }: AdminNavProps) {
                     href={item.href}
                     className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all uppercase tracking-wide ${
                       isActive
-                        ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
-                        : 'text-neutral-400 hover:text-gold-400 hover:bg-gold-500/5 border border-neutral-700'
+                        ? 'bg-warning-100 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400 border border-warning-300 dark:border-warning-500/30'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-warning-600 dark:hover:text-warning-400 hover:bg-warning-50 dark:hover:bg-warning-500/5 border border-neutral-300 dark:border-neutral-700'
                     }`}
                   >
                     {item.label}

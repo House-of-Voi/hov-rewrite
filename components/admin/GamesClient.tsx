@@ -177,7 +177,7 @@ export default function GamesClient() {
       {error && (
         <Card>
           <CardContent>
-            <div className="p-4 text-ruby-400">{error}</div>
+            <div className="p-4 text-error-600 dark:text-error-400">{error}</div>
           </CardContent>
         </Card>
       )}
@@ -218,7 +218,7 @@ export default function GamesClient() {
                               {game.display_name}
                             </h3>
                             {game.is_active ? (
-                              <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30 font-bold uppercase">
+                              <span className="px-2 py-1 bg-success-100 dark:bg-success-500/20 text-success-600 dark:text-success-400 text-xs rounded-full border border-success-300 dark:border-success-500/30 font-bold uppercase">
                                 Active
                               </span>
                             ) : (
@@ -283,11 +283,11 @@ export default function GamesClient() {
                           {formatNumberCompact(totalPayout)} VOI
                         </div>
                       </div>
-                      <div className="p-4 rounded-lg border border-green-900/20 bg-green-500/5">
-                        <div className="text-xs text-neutral-500 uppercase tracking-wider font-bold mb-2">
+                      <div className="p-4 rounded-lg border border-success-200 dark:border-success-900/20 bg-success-50 dark:bg-success-500/5">
+                        <div className="text-xs text-neutral-600 dark:text-neutral-500 uppercase tracking-wider font-bold mb-2">
                           House Profit
                         </div>
-                        <div className={`text-2xl font-black ${profit >= 0 ? 'text-green-400' : 'text-ruby-400'}`}>
+                        <div className={`text-2xl font-black ${profit >= 0 ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
                           {formatNumberCompact(profit)} VOI
                         </div>
                       </div>

@@ -61,12 +61,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     >
                       Leaderboard
                     </Link>
-                    <Link
-                      href="/app"
-                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
-                    >
-                      Dashboard
-                    </Link>
                     <AdminNavLink />
                     <UserNavServer />
                   </nav>

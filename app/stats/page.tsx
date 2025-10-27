@@ -33,29 +33,29 @@ export default function StatsPage() {
       </section>
 
       {/* Info Section */}
-      <section className="bg-gradient-to-r from-gold-500/10 to-gold-600/5 border border-gold-900/20 rounded-xl p-8">
-        <h2 className="text-xl font-bold text-gold-400 mb-4">About These Statistics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-neutral-400">
+      <section className="bg-gradient-to-r from-warning-500/10 to-warning-600/5 border border-warning-200 dark:border-warning-900/20 rounded-xl p-8">
+        <h2 className="text-xl font-bold text-warning-500 dark:text-warning-400 mb-4">About These Statistics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-neutral-600 dark:text-neutral-400">
           <div>
-            <h3 className="text-gold-400 font-semibold mb-2">Daily Statistics</h3>
+            <h3 className="text-warning-500 dark:text-warning-400 font-semibold mb-2">Daily Statistics</h3>
             <p className="text-sm">
               View platform performance for any specific day. Select a date to see spins, wagering volume, payouts, and more for that 24-hour period.
             </p>
           </div>
           <div>
-            <h3 className="text-gold-400 font-semibold mb-2">All-Time Statistics</h3>
+            <h3 className="text-warning-500 dark:text-warning-400 font-semibold mb-2">All-Time Statistics</h3>
             <p className="text-sm">
               Cumulative platform statistics since launch. Perfect for tracking long-term trends and overall platform health.
             </p>
           </div>
           <div>
-            <h3 className="text-gold-400 font-semibold mb-2">Real-Time Data</h3>
+            <h3 className="text-warning-500 dark:text-warning-400 font-semibold mb-2">Real-Time Data</h3>
             <p className="text-sm">
               All statistics are powered by the Mimir indexer, which tracks every spin on the Voi blockchain in real-time.
             </p>
           </div>
           <div>
-            <h3 className="text-gold-400 font-semibold mb-2">Fair Gaming</h3>
+            <h3 className="text-warning-500 dark:text-warning-400 font-semibold mb-2">Fair Gaming</h3>
             <p className="text-sm">
               Our RTP (Return to Player) and house edge are calculated from on-chain data to ensure complete transparency and fair gameplay.
             </p>

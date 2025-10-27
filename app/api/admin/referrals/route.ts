@@ -84,11 +84,11 @@ export async function GET(request: NextRequest) {
         converted_at,
         deactivated_at,
         created_at,
-        referrer:profiles!referrer_profile_id (
+        referrer:referrer_profile_id (
           primary_email,
           display_name
         ),
-        referred:profiles!referred_profile_id (
+        referred:referred_profile_id (
           primary_email,
           display_name
         )
@@ -168,10 +168,10 @@ export async function GET(request: NextRequest) {
 
     // Format response
     const referralCodes: ReferralCodeItem[] = (codes || []).map(code => {
-      const referrerData = code.referrer as Array<{ primary_email?: string; display_name?: string }> | null;
-      const referredData = code.referred as Array<{ primary_email?: string; display_name?: string }> | null;
-      const referrer = referrerData?.[0] || {};
-      const referred = referredData?.[0] || {};
+      const referrerData = code.referrer as { primary_email?: string; display_name?: string } | null;
+      const referredData = code.referred as { primary_email?: string; display_name?: string } | null;
+      const referrer = referrerData || {};
+      const referred = referredData || {};
 
       return {
         id: code.id,

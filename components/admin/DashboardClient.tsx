@@ -189,7 +189,7 @@ export default function DashboardClient() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gold-400 uppercase flex items-center gap-2">
+              <h3 className="text-xl font-bold text-warning-500 dark:text-warning-400 uppercase flex items-center gap-2">
                 <BoltIcon size={24} />
                 Live Game Feed
               </h3>
@@ -198,7 +198,7 @@ export default function DashboardClient() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
-                <span className="text-xs text-green-400 font-bold uppercase">Live</span>
+                <span className="text-xs text-success-600 dark:text-success-400 font-bold uppercase">Live</span>
               </div>
             </div>
           </CardHeader>
@@ -211,7 +211,7 @@ export default function DashboardClient() {
                 return (
                   <div
                     key={game.id}
-                    className="p-4 rounded-lg border border-gold-900/20 hover:bg-gold-500/5 transition-colors"
+                    className="p-4 rounded-lg border border-warning-200 dark:border-warning-900/20 hover:bg-warning-50 dark:hover:bg-warning-500/5 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
@@ -232,7 +232,7 @@ export default function DashboardClient() {
                           {parseFloat(game.bet_amount).toFixed(2)}
                         </span>
                       </div>
-                      <div className={`font-bold ${profit > 0 ? 'text-green-400' : 'text-ruby-400'}`}>
+                      <div className={`font-bold ${profit > 0 ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
                         {profit > 0 ? '+' : ''}
                         {profit.toFixed(2)}
                       </div>
@@ -247,7 +247,7 @@ export default function DashboardClient() {
         {/* Weekly Summary */}
         <Card>
           <CardHeader>
-            <h2 className="text-2xl font-bold text-gold-400 uppercase">7-Day Summary</h2>
+            <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">7-Day Summary</h2>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -255,7 +255,7 @@ export default function DashboardClient() {
                 <div className="text-sm text-neutral-500 uppercase tracking-wider font-bold mb-2">
                   Wagered
                 </div>
-                <div className="text-3xl font-black text-gold-400">
+                <div className="text-3xl font-black text-warning-500 dark:text-warning-400">
                   {formatNumberCompact(parseFloat(stats.weekly_summary.total_wagered))}
                 </div>
               </div>
@@ -263,7 +263,7 @@ export default function DashboardClient() {
                 <div className="text-sm text-neutral-500 uppercase tracking-wider font-bold mb-2">
                   Paid Out
                 </div>
-                <div className="text-3xl font-black text-gold-400">
+                <div className="text-3xl font-black text-warning-500 dark:text-warning-400">
                   {formatNumberCompact(parseFloat(stats.weekly_summary.total_payout))}
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function DashboardClient() {
                 <div className="text-sm text-neutral-500 uppercase tracking-wider font-bold mb-2">
                   House Profit
                 </div>
-                <div className="text-3xl font-black text-green-400">
+                <div className="text-3xl font-black text-success-600 dark:text-success-400">
                   {formatNumberCompact(parseFloat(stats.weekly_summary.house_profit))}
                 </div>
                 <div className="text-sm text-neutral-500 mt-1">
@@ -287,7 +287,7 @@ export default function DashboardClient() {
                 <div className="text-sm text-neutral-500 uppercase tracking-wider font-bold mb-2">
                   Avg Daily Users
                 </div>
-                <div className="text-3xl font-black text-gold-400">
+                <div className="text-3xl font-black text-warning-500 dark:text-warning-400">
                   {stats.weekly_summary.avg_daily_users}
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function DashboardClient() {
       {/* Mimir Platform Statistics (All-Time) */}
       {stats.mimir_stats && (
         <div>
-          <h2 className="text-2xl font-bold text-gold-400 uppercase mb-4">
+          <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase mb-4">
             Platform Statistics (All-Time)
           </h2>
           <div className="grid md:grid-cols-4 gap-6">

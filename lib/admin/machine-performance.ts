@@ -8,6 +8,7 @@ export type MachineConfigLite = {
   name: string;
   display_name: string | null;
   description: string | null;
+  theme: string | null;
   contract_id: number;
   chain: 'base' | 'voi' | 'solana';
   is_active: boolean;
@@ -15,6 +16,8 @@ export type MachineConfigLite = {
   rtp_target: number;
   min_bet: number;
   max_bet: number;
+  max_paylines: number;
+  launched_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -37,7 +40,9 @@ export async function fetchMachinePerformance(
 
   const { data: configs, error } = await supabase
     .from('slot_machine_configs')
-    .select('id, name, display_name, description, contract_id, chain, is_active, house_edge, rtp_target, min_bet, max_bet, created_at, updated_at')
+    .select(
+      'id, name, display_name, description, theme, contract_id, chain, is_active, house_edge, rtp_target, min_bet, max_bet, max_paylines, launched_at, created_at, updated_at'
+    )
     .eq('is_active', true)
     .order('display_name', { ascending: true });
 
@@ -52,6 +57,7 @@ export async function fetchMachinePerformance(
       name: config.name as string,
       display_name: (config.display_name as string) ?? null,
       description: (config.description as string) ?? null,
+      theme: (config.theme as string) ?? null,
       contract_id: Number(config.contract_id),
       chain: (config.chain as MachineConfigLite['chain']) ?? 'voi',
       is_active: Boolean(config.is_active),
@@ -59,6 +65,8 @@ export async function fetchMachinePerformance(
       rtp_target: Number(config.rtp_target) || 0,
       min_bet: Number(config.min_bet) || 0,
       max_bet: Number(config.max_bet) || 0,
+      max_paylines: Number(config.max_paylines) || 0,
+      launched_at: (config.launched_at as string) ?? null,
       created_at: (config.created_at as string) ?? new Date().toISOString(),
       updated_at: (config.updated_at as string) ?? new Date().toISOString(),
     }));
