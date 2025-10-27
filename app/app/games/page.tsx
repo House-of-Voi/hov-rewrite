@@ -1,9 +1,8 @@
 import Card, { CardContent, CardHeader } from '@/components/Card';
 import Button from '@/components/Button';
 import { SlotMachineIcon, TrendingUpIcon } from '@/components/icons';
-import { getServerSessionFromRequest } from '@/lib/auth/session';
-import { DEMO_MODE } from '@/lib/utils/env';
 import ChainBadge from '@/components/ChainBadge';
+import { getServerSessionFromRequest, hasGameAccess } from '@/lib/auth/session';
 
 interface SlotConfig {
   id: string;
@@ -45,18 +44,9 @@ const formatMicroVoi = (microVoi: number) => {
 };
 
 export default async function GamesLobby() {
+  // Check if user is authenticated and has game access
   const session = await getServerSessionFromRequest();
-
-  if (!session && !DEMO_MODE) {
-    return (
-      <div className="text-center py-12 space-y-4">
-        <h1 className="text-2xl font-semibold text-neutral-950 dark:text-white">Sign in to Play</h1>
-        <p className="text-neutral-700 dark:text-neutral-300">
-          Please <a href="/auth" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline">sign in</a> to access games.
-        </p>
-      </div>
-    );
-  }
+  const canPlay = session ? await hasGameAccess() : false;
 
   const games = await fetchSlotConfigs();
 
@@ -164,11 +154,19 @@ export default async function GamesLobby() {
                   </div>
 
                   {/* Play Button */}
-                  <a href={`/app/games/slots?contract=${game.contract_id}`} className="block">
-                    <Button variant="primary" size="md" className="w-full">
-                      Play Now
-                    </Button>
-                  </a>
+                  {canPlay ? (
+                    <a href={`/app/games/slots?contract=${game.contract_id}`} className="block">
+                      <Button variant="primary" size="md" className="w-full">
+                        Play Now
+                      </Button>
+                    </a>
+                  ) : (
+                    <a href="/auth" className="block">
+                      <Button variant="primary" size="md" className="w-full">
+                        Sign In to Play
+                      </Button>
+                    </a>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -176,47 +174,49 @@ export default async function GamesLobby() {
         )}
       </div>
 
-      {/* Player Stats */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold text-neutral-950 dark:text-white flex items-center gap-2">
-              <TrendingUpIcon size={20} />
-              Your Activity
-            </h3>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between py-2 border-b border-neutral-200 dark:border-neutral-700">
-              <span className="text-neutral-700 dark:text-neutral-300">Total Played</span>
-              <span className="text-neutral-950 dark:text-white font-semibold">$0.00</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-neutral-200 dark:border-neutral-700">
-              <span className="text-neutral-700 dark:text-neutral-300">Total Earnings</span>
-              <span className="text-success-600 dark:text-success-400 font-semibold">$0.00</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-neutral-700 dark:text-neutral-300">Sessions</span>
-              <span className="text-neutral-950 dark:text-white font-semibold">0</span>
-            </div>
-            <a href="/app/games/history" className="block pt-2">
-              <Button variant="outline" size="sm" className="w-full">
-                View History
-              </Button>
-            </a>
-          </CardContent>
-        </Card>
+      {/* Player Stats - Only show for authenticated users with game access */}
+      {canPlay && (
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-neutral-950 dark:text-white flex items-center gap-2">
+                <TrendingUpIcon size={20} />
+                Your Activity
+              </h3>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between py-2 border-b border-neutral-200 dark:border-neutral-700">
+                <span className="text-neutral-700 dark:text-neutral-300">Total Played</span>
+                <span className="text-neutral-950 dark:text-white font-semibold">$0.00</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-neutral-200 dark:border-neutral-700">
+                <span className="text-neutral-700 dark:text-neutral-300">Total Earnings</span>
+                <span className="text-success-600 dark:text-success-400 font-semibold">$0.00</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-neutral-700 dark:text-neutral-300">Sessions</span>
+                <span className="text-neutral-950 dark:text-white font-semibold">0</span>
+              </div>
+              <a href="/app/games/history" className="block pt-2">
+                <Button variant="outline" size="sm" className="w-full">
+                  View History
+                </Button>
+              </a>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold text-neutral-950 dark:text-white">Recent Winners</h3>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-neutral-500 dark:text-neutral-400 text-sm text-center py-6">
-              No recent wins yet. Be the first!
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-neutral-950 dark:text-white">Recent Winners</h3>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-neutral-500 dark:text-neutral-400 text-sm text-center py-6">
+                No recent wins yet. Be the first!
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

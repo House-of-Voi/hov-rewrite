@@ -6,6 +6,7 @@ import { CdpProvider } from '@/components/CdpProvider';
 import { Providers } from './providers';
 import UserNavServer from '@/components/UserNavServer';
 import AdminNavLink from '@/components/AdminNavLink';
+import GamesNavLink from '@/components/GamesNavLink';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -47,12 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     >
                       Home
                     </Link>
-                    <Link
-                      href="/app/games"
-                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
-                    >
-                      Games
-                    </Link>
+                    <GamesNavLink />
                     <Link
                       href="/stats"
                       className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
