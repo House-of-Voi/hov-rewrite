@@ -4,22 +4,33 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   hover?: boolean;
   glass?: boolean;
+  elevated?: boolean;
   glow?: boolean;
 }
 
-export default function Card({ children, className = '', hover = false, glass = false, glow = false, ...props }: CardProps) {
+export default function Card({
+  children,
+  className = '',
+  hover = false,
+  glass = false,
+  elevated = false,
+  glow = false,
+  ...props
+}: CardProps) {
   const baseStyles = 'rounded-2xl transition-all duration-200';
 
   let cardStyles = '';
   if (glow) {
-    cardStyles = 'casino-card-glow';
+    cardStyles = 'card-glow';
   } else if (glass) {
-    cardStyles = 'glass-casino';
+    cardStyles = 'glass-card';
+  } else if (elevated) {
+    cardStyles = 'card-elevated';
   } else {
-    cardStyles = 'casino-card';
+    cardStyles = 'card';
   }
 
-  const hoverStyles = hover ? 'hover:shadow-2xl hover:-translate-y-0.5' : '';
+  const hoverStyles = hover ? 'hover:shadow-lg hover:border-neutral-300 dark:hover:border-neutral-600 cursor-pointer' : '';
 
   return (
     <div className={`${baseStyles} ${cardStyles} ${hoverStyles} ${className}`} {...props}>
@@ -29,7 +40,7 @@ export default function Card({ children, className = '', hover = false, glass = 
 }
 
 export function CardHeader({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`p-6 border-b border-gold-900/20 ${className}`}>{children}</div>;
+  return <div className={`p-6 border-b border-neutral-200 dark:border-neutral-700 ${className}`}>{children}</div>;
 }
 
 export function CardContent({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -37,5 +48,5 @@ export function CardContent({ children, className = '' }: { children: ReactNode;
 }
 
 export function CardFooter({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`p-6 border-t border-gold-900/20 ${className}`}>{children}</div>;
+  return <div className={`p-6 border-t border-neutral-200 dark:border-neutral-700 ${className}`}>{children}</div>;
 }

@@ -54,8 +54,8 @@ export function Leaderboard({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gold-400">Leaderboard</h2>
-          <p className="text-neutral-500 text-sm mt-1">
+          <h2 className="text-2xl font-semibold text-neutral-950 dark:text-white">Leaderboard</h2>
+          <p className="text-neutral-700 dark:text-neutral-300 text-sm mt-1">
             {timeframe === 'daily'
               ? `Daily leaderboard ${isToday(selectedDate) ? 'for today' : `for ${selectedDate.toLocaleDateString()}`}`
               : `All-time top ${limit} players`}
@@ -70,8 +70,8 @@ export function Leaderboard({
                 onClick={() => setTimeframe(tf)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   timeframe === tf
-                    ? 'bg-gold-600 text-neutral-950'
-                    : 'bg-neutral-900/50 text-neutral-400 hover:bg-neutral-900'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
                 {tf === 'daily' ? 'Daily' : 'All Time'}
@@ -85,14 +85,14 @@ export function Leaderboard({
               value={formatDateForInput(selectedDate)}
               onChange={(e) => setSelectedDate(new Date(e.target.value))}
               max={formatDateForInput(new Date())}
-              className="px-4 py-2 rounded-lg bg-neutral-900/50 text-neutral-300 text-sm font-semibold border border-gold-900/20 hover:border-gold-900/40 transition-all focus:outline-none focus:border-gold-600"
+              className="px-4 py-2 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 text-sm font-semibold border-2 border-neutral-300 dark:border-neutral-700 hover:border-primary-400 dark:hover:border-primary-600 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           )}
 
           <select
             value={rankBy}
             onChange={(e) => setRankBy(e.target.value as RankBy)}
-            className="px-4 py-2 rounded-lg bg-neutral-900/50 text-neutral-300 text-sm font-semibold border border-gold-900/20 hover:border-gold-900/40 transition-all focus:outline-none focus:border-gold-600"
+            className="px-4 py-2 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 text-sm font-semibold border-2 border-neutral-300 dark:border-neutral-700 hover:border-primary-400 dark:hover:border-primary-600 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           >
             <option value="profit">Rank by Profit</option>
             <option value="won">Rank by Winnings</option>
@@ -107,24 +107,24 @@ export function Leaderboard({
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="bg-gradient-to-r from-neutral-900/50 to-neutral-950 border border-gold-900/20 rounded-lg p-4 animate-pulse"
+              className="card p-4 animate-pulse"
             >
               <div className="flex justify-between items-center">
-                <div className="h-4 bg-gold-900/20 rounded w-24"></div>
-                <div className="h-4 bg-gold-900/20 rounded w-32"></div>
+                <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-24"></div>
+                <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-32"></div>
               </div>
             </div>
           ))}
         </div>
       ) : isError || !data || data.length === 0 ? (
-        <div className="bg-red-950/20 border border-red-900/30 rounded-lg p-6 text-center">
-          <p className="text-red-400">Failed to load leaderboard</p>
+        <div className="bg-error-50 dark:bg-error-950/20 border border-error-200 dark:border-error-800 rounded-lg p-6 text-center">
+          <p className="text-error-600 dark:text-error-400">Failed to load leaderboard</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto card">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gold-900/20 text-left text-xs font-semibold text-neutral-500 uppercase">
+              <tr className="border-b border-neutral-200 dark:border-neutral-700 text-left text-xs font-semibold text-neutral-600 dark:text-neutral-400 uppercase">
                 <th className="px-4 py-3">Rank</th>
                 <th className="px-4 py-3">Player</th>
                 <th className="px-4 py-3 text-right">Spins</th>
@@ -150,14 +150,14 @@ export function Leaderboard({
                 return (
                   <tr
                     key={`${identifier}-${entry.rank || entry.rank_position}`}
-                    className="border-b border-gold-900/10 hover:bg-gold-900/5 transition-colors"
+                    className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-bold text-gold-400">
+                    <td className="px-4 py-3 font-bold text-primary-600 dark:text-primary-400">
                       #{entry.rank || entry.rank_position}
                     </td>
                     <td className="px-4 py-3">
                       <div>
-                        <p className="text-neutral-200 font-semibold text-sm">
+                        <p className="text-neutral-900 dark:text-neutral-100 font-semibold text-sm">
                           {entry.display_name || (
                             <>
                               {identifier.slice(0, 6)}...{identifier.slice(-4)}
@@ -165,23 +165,23 @@ export function Leaderboard({
                           )}
                         </p>
                         {entry.display_name && (
-                          <p className="text-neutral-600 text-xs font-mono truncate">
+                          <p className="text-neutral-500 dark:text-neutral-400 text-xs font-mono truncate">
                             {identifier.slice(0, 12)}...{identifier.slice(-6)}
                           </p>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right text-neutral-300">
+                    <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
                       {formatNumberCompact(entry.total_spins)}
                     </td>
-                    <td className="px-4 py-3 text-right text-neutral-300">
+                    <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
                       {formatVoi(entry.total_bet || '0', 0)} VOI
                     </td>
                     <td
                       className={`px-4 py-3 text-right font-semibold ${
                         isWinning
-                          ? 'text-emerald-400'
-                          : 'text-red-400'
+                          ? 'text-success-600 dark:text-success-400'
+                          : 'text-error-600 dark:text-error-400'
                       }`}
                     >
                       {rankBy === 'rtp'
@@ -191,7 +191,7 @@ export function Leaderboard({
                             2
                           )} VOI`}
                     </td>
-                    <td className="px-4 py-3 text-right text-neutral-300">
+                    <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
                       {formatPercent(entry.win_rate, 2)}
                     </td>
                   </tr>

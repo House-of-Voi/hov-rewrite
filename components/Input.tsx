@@ -19,7 +19,7 @@ export default function Input({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gold-400 mb-2">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
           {label}
         </label>
       )}
@@ -28,14 +28,14 @@ export default function Input({
         type={type}
         className={`w-full rounded-xl border-2 ${
           error
-            ? 'border-ruby-500 focus-visible:ring-ruby-500 focus-visible:border-ruby-500'
-            : 'border-neutral-800 focus-visible:ring-gold-500 focus-visible:border-gold-500'
-        } bg-neutral-900 px-4 py-3 text-sm text-neutral-100 transition-all placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+            ? 'border-error-500 focus-visible:ring-error-500 focus-visible:border-error-500'
+            : 'border-neutral-300 dark:border-neutral-700 focus-visible:ring-primary-500 focus-visible:border-primary-500'
+        } bg-white dark:bg-neutral-800 px-4 py-3 text-sm text-neutral-950 dark:text-white transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
         {...props}
       />
-      {error && <p className="mt-1.5 text-sm text-ruby-400">{error}</p>}
+      {error && <p className="mt-1.5 text-sm text-error-600 dark:text-error-400">{error}</p>}
       {helperText && !error && (
-        <p className="mt-1.5 text-sm text-neutral-500">{helperText}</p>
+        <p className="mt-1.5 text-sm text-neutral-700 dark:text-neutral-300">{helperText}</p>
       )}
     </div>
   );

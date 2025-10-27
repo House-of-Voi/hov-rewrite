@@ -17,13 +17,13 @@ export default function Button({
   ref,
   ...props
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center font-bold uppercase tracking-wide transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 disabled:pointer-events-none disabled:opacity-50';
+  const baseStyles = 'inline-flex items-center justify-center font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]';
 
   const variants = {
-    primary: 'bg-gradient-to-r from-gold-500 to-gold-600 text-neutral-950 hover:from-gold-400 hover:to-gold-500 shadow-lg shadow-gold-950/50 hover:shadow-gold-900/50 focus-visible:ring-gold-500',
-    secondary: 'bg-gradient-to-r from-royal-600 to-royal-700 text-white hover:from-royal-500 hover:to-royal-600 shadow-lg shadow-royal-950/50 focus-visible:ring-royal-500',
-    ghost: 'bg-transparent border-2 border-gold-500/30 text-gold-400 hover:bg-gold-500/10 hover:border-gold-400/50 focus-visible:ring-gold-500',
-    outline: 'border-2 border-neutral-700 bg-transparent text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600 focus-visible:ring-neutral-600',
+    primary: 'bg-primary-500 hover:bg-primary-600 text-white shadow-sm hover:shadow-md focus-visible:ring-primary-500 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-900',
+    secondary: 'bg-accent-500 hover:bg-accent-600 text-white shadow-sm hover:shadow-md focus-visible:ring-accent-500 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-900',
+    ghost: 'bg-transparent text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus-visible:ring-neutral-500',
+    outline: 'border-2 border-primary-500 bg-transparent text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950 focus-visible:ring-primary-500',
   };
 
   const sizes = {

@@ -12,14 +12,14 @@ export default function StatCard({
   icon?: ReactNode;
 }) {
   return (
-    <div className="casino-card p-6 hover:shadow-2xl hover:-translate-y-0.5 transition-all">
+    <div className="card p-6 transition-all">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm text-neutral-500 uppercase tracking-wider font-bold">{title}</p>
-          <p className="mt-3 text-4xl font-black text-gold-400">{value}</p>
-          {subtitle && <p className="mt-2 text-sm text-neutral-500">{subtitle}</p>}
+          <p className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">{title}</p>
+          <p className="mt-3 text-3xl font-semibold text-neutral-950 dark:text-white">{value}</p>
+          {subtitle && <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">{subtitle}</p>}
         </div>
-        {icon && <div className="text-gold-400">{icon}</div>}
+        {icon && <div className="text-primary-500 dark:text-primary-400 bg-primary-50 dark:bg-primary-950 p-3 rounded-xl">{icon}</div>}
       </div>
     </div>
   );

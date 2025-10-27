@@ -164,9 +164,9 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
     <div className="space-y-8 max-w-4xl">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">Dashboard</h1>
-          <p className="text-neutral-400 mt-2">
-            Welcome back! Manage your profile, wallets, and referrals.
+          <h1 className="text-3xl md:text-4xl font-semibold text-neutral-950 dark:text-white">Welcome Back</h1>
+          <p className="text-neutral-700 dark:text-neutral-300 mt-2">
+            Manage your profile, wallets, and referrals.
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -177,10 +177,10 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
       {/* Status Message */}
       {status && (
         <div
-          className={`p-4 rounded-xl text-center font-semibold ${
+          className={`p-4 rounded-xl text-center font-medium ${
             status.type === 'success'
-              ? 'bg-green-500/20 text-green-400 border-2 border-green-500/30'
-              : 'bg-ruby-500/20 text-ruby-400 border-2 border-ruby-500/30'
+              ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300 border border-success-300 dark:border-success-700'
+              : 'bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-300 border border-error-300 dark:border-error-700'
           }`}
         >
           {status.message}
@@ -207,22 +207,22 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-3xl font-black text-gold-400 uppercase">
+                  <h2 className="text-2xl font-semibold text-neutral-950 dark:text-white">
                     {profile.display_name || 'Set your name'}
                   </h2>
-                  <p className="text-neutral-400 text-sm mt-1">{profile.primary_email}</p>
-                  
+                  <p className="text-neutral-700 dark:text-neutral-300 text-sm mt-1">{profile.primary_email}</p>
+
                   {/* Primary Address */}
                   {primaryVoiAccount && (
-                    <div className="mt-3 flex items-center gap-2 text-neutral-300">
+                    <div className="mt-3 flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
                       <a
                         href={`https://block.voi.network/explorer/account/${primaryVoiAccount.address}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-mono text-sm hover:text-gold-400 transition-colors flex items-center gap-1"
+                        className="font-mono text-sm hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1"
                       >
                         {truncateAddress(primaryVoiAccount.address)}
-                        <ExternalLinkIcon size={14} className="text-neutral-500" />
+                        <ExternalLinkIcon size={14} className="text-neutral-500 dark:text-neutral-400" />
                       </a>
                       <button
                         onClick={() => {
@@ -230,10 +230,10 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                           setStatus({ type: 'success', message: 'Address copied!' });
                           setTimeout(() => setStatus(null), 2000);
                         }}
-                        className="p-1 hover:bg-gold-500/10 rounded transition-colors"
+                        className="p-1 hover:bg-primary-50 dark:hover:bg-primary-950 rounded transition-colors"
                         title="Copy address"
                       >
-                        <CopyIcon size={14} className="text-gold-400" />
+                        <CopyIcon size={14} className="text-primary-600 dark:text-primary-400" />
                       </button>
                     </div>
                   )}
@@ -281,23 +281,23 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
       {/* Referral Section */}
       <Card id="referrals">
         <CardHeader>
-          <h2 className="text-2xl font-bold text-gold-400 uppercase">Your Referral Codes</h2>
+          <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Your Referral Codes</h2>
         </CardHeader>
         <CardContent>
           {loadingReferrals ? (
-            <p className="text-neutral-400">Loading referral information...</p>
+            <p className="text-neutral-700 dark:text-neutral-300">Loading referral information...</p>
           ) : referralStats ? (
             <div className="space-y-6">
               {/* Referral Codes Summary */}
-              <div className="text-center p-6 bg-gradient-to-r from-blue-600/10 to-purple-600/10 border-2 border-blue-500/30 rounded-xl">
-                <p className="text-neutral-400 text-sm mb-2">Generated Codes</p>
+              <div className="text-center p-6 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-950/30 dark:to-accent-950/30 border border-primary-200 dark:border-primary-800 rounded-xl">
+                <p className="text-neutral-700 dark:text-neutral-300 text-sm mb-2">Generated Codes</p>
                 <div className="flex justify-center items-baseline gap-2">
-                  <span className="text-3xl font-black text-gold-400">
+                  <span className="text-3xl font-semibold text-neutral-950 dark:text-white">
                     {referralStats.codesGenerated}
                   </span>
-                  <span className="text-xl text-neutral-400">/ {referralStats.maxReferrals}</span>
+                  <span className="text-xl text-neutral-700 dark:text-neutral-300">/ {referralStats.maxReferrals}</span>
                 </div>
-                <p className="text-neutral-500 text-xs mt-3">
+                <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-3">
                   {referralStats.codesAvailable > 0 ? (
                     <>You can create {referralStats.codesAvailable} more code{referralStats.codesAvailable !== 1 ? 's' : ''}</>
                   ) : (
@@ -308,44 +308,44 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <div className="text-2xl font-black text-green-400">
+                <div className="text-center p-4 bg-success-100 dark:bg-success-900/20 border border-success-300 dark:border-success-700 rounded-lg">
+                  <div className="text-2xl font-semibold text-success-700 dark:text-success-300">
                     {referralStats.activeReferrals}
                   </div>
-                  <p className="text-xs text-neutral-400 mt-1">Active</p>
+                  <p className="text-xs text-neutral-700 dark:text-neutral-300 mt-1">Active</p>
                 </div>
-                <div className="text-center p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <div className="text-2xl font-black text-yellow-400">
+                <div className="text-center p-4 bg-warning-100 dark:bg-warning-900/20 border border-warning-300 dark:border-warning-700 rounded-lg">
+                  <div className="text-2xl font-semibold text-warning-700 dark:text-warning-300">
                     {referralStats.queuedReferrals}
                   </div>
-                  <p className="text-xs text-neutral-400 mt-1">Queued</p>
+                  <p className="text-xs text-neutral-700 dark:text-neutral-300 mt-1">Queued</p>
                 </div>
-                <div className="text-center p-4 bg-gold-500/10 border border-gold-500/30 rounded-lg">
-                  <div className="text-2xl font-black text-gold-400">
+                <div className="text-center p-4 bg-primary-100 dark:bg-primary-900/20 border border-primary-300 dark:border-primary-700 rounded-lg">
+                  <div className="text-2xl font-semibold text-primary-700 dark:text-primary-300">
                     {referralStats.totalReferrals}
                   </div>
-                  <p className="text-xs text-neutral-400 mt-1">Total</p>
+                  <p className="text-xs text-neutral-700 dark:text-neutral-300 mt-1">Total</p>
                 </div>
               </div>
 
               {/* Capacity Bar */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-neutral-400">Referral Capacity</span>
-                  <span className="text-gold-400 font-bold">
+                  <span className="text-neutral-700 dark:text-neutral-300">Referral Capacity</span>
+                  <span className="text-neutral-950 dark:text-white font-semibold">
                     {referralStats.activeReferrals} / {referralStats.maxReferrals}
                   </span>
                 </div>
-                <div className="w-full bg-neutral-800 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-neutral-200 dark:bg-neutral-800 rounded-full h-3 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-primary-500 to-accent-500 transition-all duration-500"
                     style={{
                       width: `${(referralStats.activeReferrals / referralStats.maxReferrals) * 100}%`,
                     }}
                   />
                 </div>
                 {referralStats.queuedReferrals > 0 && (
-                  <p className="text-sm text-yellow-400">
+                  <p className="text-sm text-warning-600 dark:text-warning-400">
                     {referralStats.queuedReferrals} referral
                     {referralStats.queuedReferrals !== 1 ? 's' : ''} waiting in queue
                   </p>
@@ -365,7 +365,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               </div>
             </div>
           ) : (
-            <p className="text-ruby-400">Failed to load referral information</p>
+            <p className="text-error-600 dark:text-error-400">Failed to load referral information</p>
           )}
         </CardContent>
       </Card>
@@ -373,11 +373,11 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
       {/* Account Actions */}
       <Card>
         <CardHeader>
-          <h2 className="text-2xl font-bold text-gold-400 uppercase">Account Actions</h2>
+          <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Account Actions</h2>
         </CardHeader>
         <CardContent>
           <div className="flex justify-end">
-            <button className="px-6 py-3 border-2 border-ruby-500/30 text-ruby-400 rounded-xl font-bold uppercase tracking-wide hover:bg-ruby-500/10 transition-colors">
+            <button className="px-6 py-3 border-2 border-error-300 dark:border-error-700 text-error-600 dark:text-error-400 rounded-xl font-medium hover:bg-error-50 dark:hover:bg-error-950 transition-colors">
               Delete Account
             </button>
           </div>

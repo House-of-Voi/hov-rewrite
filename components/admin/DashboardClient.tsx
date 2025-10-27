@@ -8,6 +8,7 @@ import ChainBadge from '@/components/ChainBadge';
 import GrandTotalCard from '@/components/admin/GrandTotalCard';
 import TreasuryTable from '@/components/admin/TreasuryTable';
 import type { DashboardStats } from '@/lib/types/admin';
+import { formatNumberCompact } from '@/lib/utils/format';
 
 export default function DashboardClient() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -72,7 +73,7 @@ export default function DashboardClient() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="text-neutral-400">Loading dashboard...</div>
+        <div className="text-neutral-700 dark:text-neutral-300">Loading dashboard...</div>
       </div>
     );
   }
@@ -81,7 +82,7 @@ export default function DashboardClient() {
     return (
       <Card>
         <CardContent>
-          <div className="text-ruby-400 p-4">{error || 'Failed to load dashboard'}</div>
+          <div className="text-error-600 dark:text-error-400 p-4">{error || 'Failed to load dashboard'}</div>
         </CardContent>
       </Card>
     );
@@ -92,12 +93,12 @@ export default function DashboardClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">Admin Dashboard</h1>
-          <p className="text-neutral-400 mt-2">
-            House operations and analytics overview
+          <h1 className="text-3xl md:text-4xl font-semibold text-neutral-950 dark:text-white">Platform Dashboard</h1>
+          <p className="text-neutral-700 dark:text-neutral-300 mt-2">
+            Operations and analytics overview
           </p>
           {lastSyncTime && (
-            <p className="text-xs text-neutral-500 mt-1">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
               Last treasury sync: {lastSyncTime.toLocaleTimeString()}
             </p>
           )}
@@ -106,21 +107,21 @@ export default function DashboardClient() {
           <button
             onClick={syncTreasury}
             disabled={syncing}
-            className={`px-4 py-2 text-sm border-2 rounded-lg font-bold uppercase tracking-wide transition-colors ${
+            className={`px-4 py-2 text-sm border-2 rounded-lg font-medium transition-colors ${
               syncing
-                ? 'border-neutral-600 text-neutral-600 cursor-not-allowed'
-                : 'border-green-500/30 text-green-400 hover:bg-green-500/10'
+                ? 'border-neutral-300 dark:border-neutral-700 text-neutral-400 dark:text-neutral-600 cursor-not-allowed'
+                : 'border-success-300 dark:border-success-700 text-success-600 dark:text-success-400 hover:bg-success-50 dark:hover:bg-success-950'
             }`}
           >
             {syncing ? 'Refreshing...' : 'Refresh'}
           </button>
           <a href="/admin/games">
-            <button className="px-4 py-2 text-sm border-2 border-gold-500/30 text-gold-400 rounded-lg hover:bg-gold-500/10 transition-colors font-bold uppercase tracking-wide">
+            <button className="px-4 py-2 text-sm border-2 border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-950 transition-colors font-medium">
               Manage Games
             </button>
           </a>
           <a href="/admin/analytics">
-            <button className="px-4 py-2 text-sm border-2 border-gold-500/30 text-gold-400 rounded-lg hover:bg-gold-500/10 transition-colors font-bold uppercase tracking-wide">
+            <button className="px-4 py-2 text-sm border-2 border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-950 transition-colors font-medium">
               Analytics
             </button>
           </a>
@@ -131,7 +132,7 @@ export default function DashboardClient() {
       {syncError && (
         <Card>
           <CardContent>
-            <div className="text-ruby-400 p-4">{syncError}</div>
+            <div className="text-error-600 dark:text-error-400 p-4">{syncError}</div>
           </CardContent>
         </Card>
       )}
@@ -144,37 +145,37 @@ export default function DashboardClient() {
 
       {/* Today's Performance */}
       <div>
-        <h2 className="text-2xl font-bold text-gold-400 uppercase mb-4">Today&apos;s Performance</h2>
+        <h2 className="text-xl font-semibold text-neutral-950 dark:text-white mb-4">Today&apos;s Activity</h2>
         <div className="grid md:grid-cols-5 gap-6">
           <StatCard
-            title="Total Wagered"
-            value={parseFloat(stats.today.total_wagered).toFixed(2)}
+            title="Total Volume"
+            value={formatNumberCompact(parseFloat(stats.today.total_wagered))}
             subtitle="Across all games"
-            icon={<CoinsIcon size={32} />}
+            icon={<CoinsIcon size={24} />}
           />
           <StatCard
-            title="Total Payout"
-            value={parseFloat(stats.today.total_payout).toFixed(2)}
-            subtitle="Player winnings"
-            icon={<TrendingUpIcon size={32} />}
+            title="Total Rewards"
+            value={formatNumberCompact(parseFloat(stats.today.total_payout))}
+            subtitle="Player earnings"
+            icon={<TrendingUpIcon size={24} />}
           />
           <StatCard
-            title="House Profit"
-            value={parseFloat(stats.today.house_profit).toFixed(2)}
+            title="Platform Revenue"
+            value={formatNumberCompact(parseFloat(stats.today.house_profit))}
             subtitle={`${(
               (parseFloat(stats.today.house_profit) / parseFloat(stats.today.total_wagered || '1')) *
               100
             ).toFixed(1)}% margin`}
-            icon={<ChartIcon size={32} />}
+            icon={<ChartIcon size={24} />}
           />
           <StatCard
             title="Active Users"
             value={stats.today.active_users}
             subtitle="Unique players"
-            icon={<UsersIcon size={32} />}
+            icon={<UsersIcon size={24} />}
           />
           <StatCard
-            title="Total Rounds"
+            title="Total Sessions"
             value={stats.today.total_rounds}
             subtitle="Games played"
             icon={<SlotMachineIcon size={32} />}
@@ -255,7 +256,7 @@ export default function DashboardClient() {
                   Wagered
                 </div>
                 <div className="text-3xl font-black text-gold-400">
-                  {parseFloat(stats.weekly_summary.total_wagered).toFixed(2)}
+                  {formatNumberCompact(parseFloat(stats.weekly_summary.total_wagered))}
                 </div>
               </div>
               <div className="text-center p-6">
@@ -263,7 +264,7 @@ export default function DashboardClient() {
                   Paid Out
                 </div>
                 <div className="text-3xl font-black text-gold-400">
-                  {parseFloat(stats.weekly_summary.total_payout).toFixed(2)}
+                  {formatNumberCompact(parseFloat(stats.weekly_summary.total_payout))}
                 </div>
               </div>
               <div className="text-center p-6">
@@ -271,7 +272,7 @@ export default function DashboardClient() {
                   House Profit
                 </div>
                 <div className="text-3xl font-black text-green-400">
-                  {parseFloat(stats.weekly_summary.house_profit).toFixed(2)}
+                  {formatNumberCompact(parseFloat(stats.weekly_summary.house_profit))}
                 </div>
                 <div className="text-sm text-neutral-500 mt-1">
                   {(
@@ -310,13 +311,13 @@ export default function DashboardClient() {
             />
             <StatCard
               title="Total Wagered"
-              value={(parseInt(stats.mimir_stats.total_bet) / 1e6).toFixed(2)}
+              value={formatNumberCompact(parseInt(stats.mimir_stats.total_bet) / 1e6)}
               subtitle="VOI"
               icon={<CoinsIcon size={32} />}
             />
             <StatCard
               title="Total Won"
-              value={(parseInt(stats.mimir_stats.total_won) / 1e6).toFixed(2)}
+              value={formatNumberCompact(parseInt(stats.mimir_stats.total_won) / 1e6)}
               subtitle="VOI paid out"
               icon={<TrendingUpIcon size={32} />}
             />
@@ -340,13 +341,13 @@ export default function DashboardClient() {
             />
             <StatCard
               title="Largest Win"
-              value={(parseInt(stats.mimir_stats.largest_win) / 1e6).toFixed(2)}
+              value={formatNumberCompact(parseInt(stats.mimir_stats.largest_win) / 1e6)}
               subtitle="VOI"
               icon={<ChartIcon size={32} />}
             />
             <StatCard
               title="Net Result"
-              value={(parseInt(stats.mimir_stats.net_result) / 1e6).toFixed(2)}
+              value={formatNumberCompact(parseInt(stats.mimir_stats.net_result) / 1e6)}
               subtitle={parseInt(stats.mimir_stats.net_result) >= 0 ? 'House Profit' : 'House Loss'}
               icon={<ChartIcon size={32} />}
             />

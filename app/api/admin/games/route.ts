@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/db/supabaseAdmin';
 import { requirePermission, getCurrentProfileId, PERMISSIONS } from '@/lib/auth/admin';
+import { fetchMachinePerformance } from '@/lib/admin/machine-performance';
+import { microToString, numberFrom } from '@/lib/admin/stat-math';
 import type { ApiResponse, PaginatedResponse, GameListItem, GameFilters, GameCreateData } from '@/lib/types/admin';
 
 export async function GET(request: NextRequest) {
@@ -26,73 +28,42 @@ export async function GET(request: NextRequest) {
       sort_order: (searchParams.get('sort_order') as 'asc' | 'desc') || 'desc',
     };
 
-    const supabase = createAdminClient();
     const offset = (filters.page! - 1) * filters.limit!;
 
-    // Build query
-    let query = supabase
-      .from('games')
-      .select('*', { count: 'exact' });
+    const { machines } = await fetchMachinePerformance({});
 
-    // Apply filters
-    if (filters.game_type) {
-      query = query.eq('game_type', filters.game_type);
+    let filtered = machines;
+
+    if (filters.game_type && filters.game_type !== 'slots') {
+      filtered = [];
     }
 
     if (filters.active !== undefined) {
-      query = query.eq('active', filters.active);
+      filtered = filtered.filter(({ config }) => config.is_active === filters.active);
     }
 
-    // Apply sorting
-    query = query.order(filters.sort_by!, { ascending: filters.sort_order === 'asc' });
+    const total = filtered.length;
+    const paged = filtered.slice(offset, offset + filters.limit!);
 
-    // Apply pagination
-    query = query.range(offset, offset + filters.limit! - 1);
+    const gamesList: GameListItem[] = paged.map(({ config, allTime }) => {
+      const totalWageredMicro = allTime ? numberFrom(allTime.total_amount_bet) : 0;
+      const totalPayoutMicro = allTime ? numberFrom(allTime.total_amount_paid) : 0;
+      const totalPlays = allTime ? numberFrom(allTime.total_bets) : 0;
 
-    const { data: games, error, count } = await query;
-
-    if (error) {
-      console.error('Error fetching games:', error);
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Failed to fetch games' },
-        { status: 500 }
-      );
-    }
-
-    // Get play stats for each game
-    const gameIds = games?.map(g => g.id) || [];
-    const { data: playStats } = await supabase
-      .from('game_plays')
-      .select('game_id, bet_amount, payout_amount')
-      .in('game_id', gameIds);
-
-    // Aggregate stats by game
-    const statsMap = new Map<string, { total_plays: number; total_wagered: number; total_payout: number }>();
-    playStats?.forEach(play => {
-      const current = statsMap.get(play.game_id) || { total_plays: 0, total_wagered: 0, total_payout: 0 };
-      current.total_plays++;
-      current.total_wagered += parseFloat(play.bet_amount || '0');
-      current.total_payout += parseFloat(play.payout_amount || '0');
-      statsMap.set(play.game_id, current);
-    });
-
-    // Format response
-    const gamesList: GameListItem[] = (games || []).map(game => {
-      const stats = statsMap.get(game.id);
       return {
-        id: game.id,
-        game_type: game.game_type,
-        name: game.name,
-        description: game.description,
-        house_edge: game.house_edge,
-        min_bet: game.min_bet,
-        max_bet: game.max_bet,
-        active: game.active,
-        created_at: game.created_at,
-        updated_at: game.updated_at,
-        total_plays: stats?.total_plays || 0,
-        total_wagered: stats?.total_wagered.toFixed(8) || '0.00000000',
-        total_payout: stats?.total_payout.toFixed(8) || '0.00000000',
+        id: config.id,
+        game_type: 'slots',
+        name: config.display_name || config.name,
+        description: config.description,
+        house_edge: config.house_edge.toFixed(2),
+        min_bet: microToString(config.min_bet),
+        max_bet: microToString(config.max_bet),
+        active: config.is_active,
+        created_at: config.created_at,
+        updated_at: config.updated_at,
+        total_plays: totalPlays,
+        total_wagered: microToString(totalWageredMicro),
+        total_payout: microToString(totalPayoutMicro),
       };
     });
 
@@ -101,8 +72,8 @@ export async function GET(request: NextRequest) {
       pagination: {
         page: filters.page!,
         limit: filters.limit!,
-        total: count || 0,
-        total_pages: Math.ceil((count || 0) / filters.limit!),
+        total,
+        total_pages: Math.ceil(total / filters.limit!),
       },
     };
 
@@ -110,10 +81,10 @@ export async function GET(request: NextRequest) {
       { success: true, data: response },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in games API:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message.includes('UNAUTHORIZED') || error.message.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }
@@ -181,10 +152,10 @@ export async function POST(request: NextRequest) {
       { success: true, data, message: 'Game created successfully' },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating game:', error);
 
-    if (error.message?.includes('UNAUTHORIZED') || error.message?.includes('FORBIDDEN')) {
+    if (error instanceof Error && (error.message.includes('UNAUTHORIZED') || error.message.includes('FORBIDDEN'))) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: error.message },
         { status: error.message.includes('UNAUTHORIZED') ? 401 : 403 }

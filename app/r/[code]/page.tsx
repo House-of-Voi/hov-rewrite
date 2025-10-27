@@ -50,7 +50,7 @@ export default async function ReferralPage({
           </span>
         </div>
         <h1 className="text-4xl font-bold">Join House of Voi</h1>
-        <p className="text-lg text-neutral-600 dark:text-neutral-400">
+        <p className="text-lg text-neutral-700 dark:text-neutral-300">
           You&apos;ve been referred by{' '}
           <span className="font-bold text-purple-600 dark:text-purple-400">
             {validation.referrerName}
@@ -80,7 +80,7 @@ export default async function ReferralPage({
           <div className="text-center space-y-2">
             <div className="text-4xl">🔗</div>
             <h3 className="font-semibold">Multi-Chain Access</h3>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">
               Connect wallets from Base, Voi, and Solana
             </p>
           </div>
@@ -88,7 +88,7 @@ export default async function ReferralPage({
           <div className="text-center space-y-2">
             <div className="text-4xl">💰</div>
             <h3 className="font-semibold">Earn Rewards</h3>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">
               Get rewards for joining and referring others
             </p>
           </div>
@@ -96,7 +96,7 @@ export default async function ReferralPage({
           <div className="text-center space-y-2">
             <div className="text-4xl">🌟</div>
             <h3 className="font-semibold">Early Access</h3>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">
               Be among the first in the community
             </p>
           </div>

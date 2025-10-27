@@ -10,8 +10,8 @@ export default async function ReferralsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">Referrals</h1>
-          <p className="text-neutral-400 mt-2">Monitor referral codes and conversions</p>
+          <h1 className="text-4xl font-semibold text-neutral-950 dark:text-white uppercase">Referrals</h1>
+          <p className="text-neutral-700 dark:text-neutral-300 mt-2">Monitor referral codes and conversions</p>
         </div>
       </div>
 

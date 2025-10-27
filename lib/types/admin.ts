@@ -245,6 +245,63 @@ export interface PlayerCohort {
   avg_wagered_per_player: string;
 }
 
+export interface AnalyticsDailyEntry {
+  date: string;
+  total_wagered: string;
+  total_payout: string;
+  house_profit: string;
+  active_users: number;
+  total_rounds: number;
+}
+
+export interface AnalyticsGameItem {
+  game_id: string;
+  game_name: string;
+  game_type: 'slots' | 'keno' | 'roulette' | 'unknown';
+  total_wagered: string;
+  total_payout: string;
+  house_profit: string;
+  total_rounds: number;
+  unique_players: number;
+}
+
+export interface AnalyticsPlayerItem {
+  profile_id: string;
+  display_name: string | null;
+  primary_email: string | null;
+  primary_address: string | null;
+  total_wagered: string;
+  total_payout: string;
+  net_profit: string;
+  wins: number;
+  losses: number;
+  last_play_at: string | null;
+}
+
+export interface AnalyticsChainDistributionItem {
+  chain: 'base' | 'voi' | 'solana' | 'unknown';
+  total_wagered: string;
+  total_payout: string;
+  house_profit: string;
+  percentage_of_volume: number;
+}
+
+export interface AnalyticsSummary {
+  total_volume: string;
+  total_profit: string;
+  avg_daily_users: number;
+  total_rounds: number;
+  house_edge: number;
+}
+
+export interface AnalyticsOverview {
+  daily: AnalyticsDailyEntry[];
+  top_games: AnalyticsGameItem[];
+  top_players: AnalyticsPlayerItem[];
+  chain_distribution: AnalyticsChainDistributionItem[];
+  summary: AnalyticsSummary;
+}
+
 // Pagination and filtering
 export interface PaginationParams {
   page?: number;
@@ -265,6 +322,43 @@ export interface PlayerFilters extends PaginationParams {
 export interface GameFilters extends PaginationParams {
   game_type?: 'slots' | 'keno' | 'roulette';
   active?: boolean;
+}
+
+// Slot Machine Config types
+export interface SlotMachineConfig {
+  id: string;
+  name: string;
+  display_name: string;
+  description: string | null;
+  theme: string | null;
+  contract_id: number;
+  chain: 'base' | 'voi' | 'solana';
+  treasury_address: string | null;
+  rtp_target: string;
+  house_edge: string;
+  min_bet: number;
+  max_bet: number;
+  max_paylines: number;
+  reel_config: Record<string, any>;
+  is_active: boolean;
+  launched_at: string;
+  deprecated_at: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SlotMachineConfigListItem extends SlotMachineConfig {
+  total_spins?: number;
+  total_wagered?: string;
+  total_payout?: string;
+  unique_players?: number;
+}
+
+export interface SlotMachineConfigFilters extends PaginationParams {
+  chain?: 'base' | 'voi' | 'solana';
+  is_active?: boolean;
+  theme?: string;
 }
 
 export interface ReferralFilters extends PaginationParams {
