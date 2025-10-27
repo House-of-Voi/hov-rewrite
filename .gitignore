@@ -59,7 +59,7 @@ dist/
 .supabase/
 
 .claude/
-docs/
+docs/**
 phase2/
 CLAUDE.md
 AGENTS.md
