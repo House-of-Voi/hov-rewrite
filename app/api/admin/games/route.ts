@@ -13,7 +13,7 @@ import type { ApiResponse, PaginatedResponse, GameListItem, GameFilters, GameCre
 export async function GET(request: NextRequest) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.VIEW_GAMES, profileId);
+    await requirePermission(PERMISSIONS.VIEW_GAMES, profileId ?? undefined);
 
     const { searchParams } = new URL(request.url);
 
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.CREATE_GAMES, profileId);
+    await requirePermission(PERMISSIONS.CREATE_GAMES, profileId ?? undefined);
 
     const body: GameCreateData = await request.json();
 

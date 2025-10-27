@@ -11,7 +11,7 @@ import type { ApiResponse, PaginatedResponse, ReferralCodeItem, ReferralFilters,
 export async function GET(request: NextRequest) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.VIEW_REFERRALS, profileId);
+    await requirePermission(PERMISSIONS.VIEW_REFERRALS, profileId ?? undefined);
 
     const { searchParams } = new URL(request.url);
     const statsOnly = searchParams.get('stats_only') === 'true';

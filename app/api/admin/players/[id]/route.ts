@@ -16,7 +16,7 @@ interface RouteContext {
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.VIEW_PLAYERS, profileId);
+    await requirePermission(PERMISSIONS.VIEW_PLAYERS, profileId ?? undefined);
 
     const { id: playerId } = await context.params;
     const supabase = createAdminClient();
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.EDIT_PLAYERS, profileId);
+    await requirePermission(PERMISSIONS.EDIT_PLAYERS, profileId ?? undefined);
 
     const { id: playerId } = await context.params;
     const body: PlayerUpdateData = await request.json();

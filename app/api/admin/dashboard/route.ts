@@ -14,7 +14,7 @@ import type { ApiResponse, DashboardStats, TreasuryItem } from '@/lib/types/admi
 export async function GET() {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.VIEW_ANALYTICS, profileId);
+    await requirePermission(PERMISSIONS.VIEW_ANALYTICS, profileId ?? undefined);
 
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);

@@ -15,7 +15,7 @@ interface RouteContext {
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.VIEW_GAMES, profileId);
+    await requirePermission(PERMISSIONS.VIEW_GAMES, profileId ?? undefined);
 
     const { id: gameId } = await context.params;
     const supabase = createAdminClient();
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.EDIT_GAMES, profileId);
+    await requirePermission(PERMISSIONS.EDIT_GAMES, profileId ?? undefined);
 
     const { id: gameId } = await context.params;
     const body: GameUpdateData = await request.json();
@@ -182,7 +182,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.DELETE_GAMES, profileId);
+    await requirePermission(PERMISSIONS.DELETE_GAMES, profileId ?? undefined);
 
     const { id: gameId } = await context.params;
     const supabase = createAdminClient();

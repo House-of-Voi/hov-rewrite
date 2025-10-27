@@ -11,7 +11,7 @@ import type { ApiResponse, PaginatedResponse, SlotMachineConfigListItem, SlotMac
 export async function GET(request: NextRequest) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.VIEW_GAMES, profileId);
+    await requirePermission(PERMISSIONS.VIEW_GAMES, profileId ?? undefined);
 
     const { searchParams } = new URL(request.url);
 

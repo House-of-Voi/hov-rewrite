@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'grant-access': {
-        await requirePermission(PERMISSIONS.GRANT_ACCESS, profileId);
+        await requirePermission(PERMISSIONS.GRANT_ACCESS, profileId ?? undefined);
         const body: BulkGrantAccessRequest = await request.json();
 
         if (!body.player_ids || !Array.isArray(body.player_ids) || body.player_ids.length === 0) {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'revoke-access': {
-        await requirePermission(PERMISSIONS.GRANT_ACCESS, profileId);
+        await requirePermission(PERMISSIONS.GRANT_ACCESS, profileId ?? undefined);
         const body: BulkGrantAccessRequest = await request.json();
 
         if (!body.player_ids || !Array.isArray(body.player_ids) || body.player_ids.length === 0) {
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'waitlist-approve': {
-        await requirePermission(PERMISSIONS.MANAGE_WAITLIST, profileId);
+        await requirePermission(PERMISSIONS.MANAGE_WAITLIST, profileId ?? undefined);
         const body: BulkWaitlistApproveRequest = await request.json();
 
         let playerIds: string[] = [];

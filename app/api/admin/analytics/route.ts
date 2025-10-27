@@ -24,7 +24,7 @@ const TOP_PLAYERS_LIMIT = 10;
 export async function GET() {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.VIEW_ANALYTICS, profileId);
+    await requirePermission(PERMISSIONS.VIEW_ANALYTICS, profileId ?? undefined);
 
     const today = new Date();
     const startOfToday = new Date(today);

@@ -11,7 +11,7 @@ import type { ApiResponse, PaginatedResponse, PlayerListItem, PlayerFilters } fr
 export async function GET(request: NextRequest) {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.VIEW_PLAYERS, profileId);
+    await requirePermission(PERMISSIONS.VIEW_PLAYERS, profileId ?? undefined);
 
     const { searchParams } = new URL(request.url);
 

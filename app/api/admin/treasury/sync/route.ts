@@ -20,7 +20,7 @@ interface SyncResult {
 export async function POST() {
   try {
     const profileId = await getCurrentProfileId();
-    await requirePermission(PERMISSIONS.MANAGE_GAMES, profileId);
+    await requirePermission(PERMISSIONS.MANAGE_GAMES, profileId ?? undefined);
 
     // Check if Voi configuration is available
     if (!env.VOI_NODE_URL) {
