@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google';
 import { CdpProvider } from '@/components/CdpProvider';
 import { Providers } from './providers';
 import UserNavServer from '@/components/UserNavServer';
+import AdminNavLink from '@/components/AdminNavLink';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     >
                       Dashboard
                     </Link>
+                    <AdminNavLink />
                     <UserNavServer />
                   </nav>
                 </div>

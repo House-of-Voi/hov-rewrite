@@ -11,6 +11,9 @@ const ServerEnv = z.object({
   NEXT_PUBLIC_CDP_PROJECT_ID: z.string().min(1),
   NEXT_PUBLIC_CDP_API_KEY_NAME: z.string().min(1),
   CDP_API_KEY_PRIVATE_KEY: z.string().min(10),
+  // Voi Network Configuration
+  VOI_NODE_URL: z.string().url().optional(),
+  VOI_INDEXER_URL: z.string().url().optional(),
 });
 
 export const env = ServerEnv.parse({
@@ -24,6 +27,8 @@ export const env = ServerEnv.parse({
   NEXT_PUBLIC_CDP_PROJECT_ID: process.env.NEXT_PUBLIC_CDP_PROJECT_ID,
   NEXT_PUBLIC_CDP_API_KEY_NAME: process.env.NEXT_PUBLIC_CDP_API_KEY_NAME,
   CDP_API_KEY_PRIVATE_KEY: process.env.CDP_API_KEY_PRIVATE_KEY,
+  VOI_NODE_URL: process.env.VOI_NODE_URL,
+  VOI_INDEXER_URL: process.env.VOI_INDEXER_URL,
 });
 
 export const DEMO_MODE = false;
