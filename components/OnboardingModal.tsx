@@ -333,10 +333,10 @@ export default function OnboardingModal({
           </div>
         )}
 
-        {/* Step content */}
+        {/* Step content with smooth transitions */}
         <div className="min-h-[300px]">
           {step === 'name' && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-warning-500 dark:text-warning-400 mb-2">
                   What should we call you?
@@ -363,7 +363,7 @@ export default function OnboardingModal({
           )}
 
           {step === 'referral' && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-warning-500 dark:text-warning-400 mb-2">
                   Have a referral code?
@@ -397,7 +397,7 @@ export default function OnboardingModal({
           )}
 
           {step === 'avatar' && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-warning-500 dark:text-warning-400 mb-2">
                   Choose your avatar

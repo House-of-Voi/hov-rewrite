@@ -30,7 +30,7 @@ export default function Page() {
               <a href="/auth">Get Started</a>
             </Button>
             <Button variant="outline" size="lg">
-              <a href="/app/games">Browse Games</a>
+              <a href="/games">Browse Games</a>
             </Button>
           </div>
 

@@ -120,4 +120,42 @@
   .text-tertiary {
     @apply text-neutral-600 dark:text-neutral-400;
   }
+
+  /* Animation Utilities for Page Transitions */
+  @keyframes slide-in-from-bottom {
+    from {
+      transform: translateY(1rem);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-in-from-top {
+    from {
+      transform: translateY(-1rem);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-in-bottom {
+    animation: slide-in-from-bottom 0.5s ease-out;
+  }
+
+  .animate-slide-in-top {
+    animation: slide-in-from-top 0.5s ease-out;
+  }
+
+  /* Stagger animation delays */
+  .stagger-1 { animation-delay: 100ms; }
+  .stagger-2 { animation-delay: 200ms; }
+  .stagger-3 { animation-delay: 300ms; }
+  .stagger-4 { animation-delay: 400ms; }
+  .stagger-5 { animation-delay: 500ms; }
 }

@@ -7,6 +7,7 @@ import { Providers } from './providers';
 import UserNavServer from '@/components/UserNavServer';
 import AdminNavLink from '@/components/AdminNavLink';
 import GamesNavLink from '@/components/GamesNavLink';
+import { RouteLoadingIndicator } from '@/components/RouteLoadingIndicator';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} min-h-screen`}>
         <Providers>
           <CdpProvider>
+            <RouteLoadingIndicator />
             <header className="sticky top-0 z-50 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-200 dark:border-neutral-800">
               <div className="mx-auto max-w-7xl px-6">
                 <div className="flex items-center justify-between h-16">
@@ -44,20 +46,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <nav className="flex items-center space-x-1">
                     <Link
                       href="/"
-                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
+                      prefetch={true}
+                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors duration-200"
                     >
                       Home
                     </Link>
                     <GamesNavLink />
                     <Link
                       href="/stats"
-                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
+                      prefetch={true}
+                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors duration-200"
                     >
                       Stats
                     </Link>
                     <Link
                       href="/leaderboard"
-                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
+                      prefetch={true}
+                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors duration-200"
                     >
                       Leaderboard
                     </Link>
@@ -67,7 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               </div>
             </header>
-            <main className="mx-auto max-w-7xl px-6 py-12 min-h-[calc(100vh-12rem)]">{children}</main>
+            <main className="mx-auto max-w-7xl px-6 py-12 min-h-[calc(100vh-16rem)] transition-all duration-300">{children}</main>
             <footer className="border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
               <div className="mx-auto max-w-7xl px-6 py-12">
                 <div className="text-center">

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import Card, { CardContent } from '@/components/Card';
 import ChainBadge from '@/components/ChainBadge';
@@ -8,29 +9,25 @@ import type { PlayerListItem, PaginatedResponse } from '@/lib/types/admin';
 import { formatNumberCompact } from '@/lib/utils/format';
 
 export default function PlayersTable() {
-  const [players, setPlayers] = useState<PlayerListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 50,
-    total: 0,
-    total_pages: 0,
-  });
-
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [limit] = useState(50);
   const [search, setSearch] = useState('');
   const [gameAccessFilter, setGameAccessFilter] = useState<string>('all');
   const [waitlistFilter, setWaitlistFilter] = useState<string>('all');
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
 
-  const fetchPlayers = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
+  // Use React Query for data fetching with automatic caching and refetching
+  const {
+    data,
+    isLoading: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: ['players', page, limit, search, gameAccessFilter, waitlistFilter],
+    queryFn: async () => {
       const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
+        page: page.toString(),
+        limit: limit.toString(),
       });
 
       if (search) params.append('search', search);
@@ -40,24 +37,19 @@ export default function PlayersTable() {
       const response = await fetch(`/api/admin/players?${params}`);
       const data = await response.json();
 
-      if (data.success) {
-        const result = data.data as PaginatedResponse<PlayerListItem>;
-        setPlayers(result.data);
-        setPagination(result.pagination);
-      } else {
-        setError(data.error || 'Failed to fetch players');
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch players');
       }
-    } catch (err) {
-      console.error('Error fetching players:', err);
-      setError('Failed to load players');
-    } finally {
-      setLoading(false);
-    }
-  }, [gameAccessFilter, pagination.limit, pagination.page, search, waitlistFilter]);
 
-  useEffect(() => {
-    fetchPlayers();
-  }, [fetchPlayers]);
+      return data.data as PaginatedResponse<PlayerListItem>;
+    },
+    staleTime: 10 * 1000, // 10 seconds - admin data should be fairly fresh
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+  });
+
+  const players = data?.data ?? [];
+  const pagination = data?.pagination ?? { page: 1, limit: 50, total: 0, total_pages: 0 };
+  const error = queryError ? String(queryError) : null;
 
   const handleBulkAction = async (action: string) => {
     if (selectedPlayers.size === 0) {
@@ -79,7 +71,8 @@ export default function PlayersTable() {
       if (data.success) {
         alert(data.message);
         setSelectedPlayers(new Set());
-        fetchPlayers();
+        // Invalidate query to refetch players data
+        queryClient.invalidateQueries({ queryKey: ['players'] });
       } else {
         alert(data.error || 'Action failed');
       }
@@ -149,7 +142,7 @@ export default function PlayersTable() {
               <option value="false">Not on Waitlist</option>
             </select>
             <button
-              onClick={fetchPlayers}
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['players'] })}
               className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-lg font-bold uppercase tracking-wide hover:bg-primary-700 dark:hover:bg-primary-600 transition-all"
             >
               Refresh
@@ -305,7 +298,7 @@ export default function PlayersTable() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                    onClick={() => setPage(page - 1)}
                     disabled={pagination.page === 1}
                     className="px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary-600 dark:hover:text-primary-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all uppercase tracking-wide"
                   >
@@ -315,7 +308,7 @@ export default function PlayersTable() {
                     Page {pagination.page} of {pagination.total_pages}
                   </span>
                   <button
-                    onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                    onClick={() => setPage(page + 1)}
                     disabled={pagination.page >= pagination.total_pages}
                     className="px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary-600 dark:hover:text-primary-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all uppercase tracking-wide"
                   >

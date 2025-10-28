@@ -15,7 +15,7 @@ export default async function GamesNavLink() {
   if (!session) {
     return (
       <Link
-        href="/app/games"
+        href="/games"
         className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
       >
         Games
@@ -37,7 +37,7 @@ export default async function GamesNavLink() {
   if (hasAccess) {
     return (
       <Link
-        href="/app/games"
+        href="/games"
         className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
       >
         Games
@@ -48,7 +48,7 @@ export default async function GamesNavLink() {
   // User is on waitlist - show normal link (they can view their waitlist status)
   return (
     <Link
-      href="/app/games"
+      href="/games"
       className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
     >
       Games

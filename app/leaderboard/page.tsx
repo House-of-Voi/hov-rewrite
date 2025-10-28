@@ -95,7 +95,7 @@ export default function LeaderboardPage() {
           Test your luck at House of Voi and climb the leaderboard. Every spin is recorded on-chain and contributes to your ranking.
         </p>
         <a
-          href="/app/games/slots"
+          href="/games/slots"
           className="inline-block px-8 py-3 bg-warning-600 hover:bg-warning-500 text-white font-bold rounded-lg transition-all"
         >
           Play Now

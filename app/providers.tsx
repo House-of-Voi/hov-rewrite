@@ -11,8 +11,14 @@ function getQueryClient() {
     return new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 60 * 1000, // 1 minute
-          gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+          staleTime: 30 * 1000, // 30 seconds - data fresh for this duration
+          gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache even when unused
+          refetchOnWindowFocus: true, // Refetch when user returns to tab
+          refetchOnReconnect: true, // Refetch when connection restored
+          retry: 2, // Retry failed requests twice
+        },
+        mutations: {
+          retry: 1, // Retry mutations once on failure
         },
       },
     });
@@ -23,8 +29,14 @@ function getQueryClient() {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 60 * 1000, // 1 minute
-          gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+          staleTime: 30 * 1000, // 30 seconds - data fresh for this duration
+          gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache even when unused
+          refetchOnWindowFocus: true, // Refetch when user returns to tab
+          refetchOnReconnect: true, // Refetch when connection restored
+          retry: 2, // Retry failed requests twice
+        },
+        mutations: {
+          retry: 1, // Retry mutations once on failure
         },
       },
     });

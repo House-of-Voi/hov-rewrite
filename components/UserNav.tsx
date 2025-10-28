@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import { useSignOut } from '@coinbase/cdp-hooks';
 import Avatar from './Avatar';
 
@@ -20,8 +20,9 @@ interface UserNavProps {
  *
  * Displays user avatar and name in the header navigation.
  * Shows when user is authenticated.
+ * Memoized to prevent unnecessary re-renders in the header.
  */
-export default function UserNav({ initialProfile = null }: UserNavProps) {
+function UserNav({ initialProfile = null }: UserNavProps) {
   const [profile, setProfile] = useState<Profile | null>(initialProfile);
   const [isLoading, setIsLoading] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -156,3 +157,6 @@ export default function UserNav({ initialProfile = null }: UserNavProps) {
     </div>
   );
 }
+
+// Export memoized version to prevent unnecessary re-renders
+export default memo(UserNav);

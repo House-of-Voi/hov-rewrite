@@ -75,7 +75,7 @@ export default function SlotsGame() {
             Match 3 or more symbols to win. Provably fair blockchain gaming.
           </p>
         </div>
-        <a href="/app/games">
+        <a href="/games">
           <Button variant="ghost" size="sm">
             ← Back to Lobby
           </Button>

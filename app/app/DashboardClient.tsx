@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSignOut } from '@coinbase/cdp-hooks';
 import Card, { CardContent, CardHeader } from '@/components/Card';
 import Button from '@/components/Button';
@@ -41,14 +42,37 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
-  const [loadingReferrals, setLoadingReferrals] = useState(true);
 
   const { signOut } = useSignOut();
 
   // Get primary Voi address
-  const primaryVoiAccount = initialData.accounts.find((account) => account.chain === 'voi' && account.is_primary) 
+  const primaryVoiAccount = initialData.accounts.find((account) => account.chain === 'voi' && account.is_primary)
     || initialData.accounts.find((account) => account.chain === 'voi');
+
+  // Use React Query for referral stats with caching and automatic refetching
+  const { data: referralStats, isLoading: loadingReferrals } = useQuery<ReferralStats>({
+    queryKey: ['referralStats'],
+    queryFn: async () => {
+      const response = await fetch('/api/referrals/info');
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error('Failed to fetch referral stats');
+      }
+
+      return {
+        codesGenerated: data.codesGenerated,
+        codesAvailable: data.codesAvailable,
+        maxReferrals: data.maxReferrals,
+        activeReferrals: data.activeReferrals,
+        queuedReferrals: data.queuedReferrals,
+        totalReferrals: data.totalReferrals,
+        codes: data.codes,
+      };
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes for referral stats
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+  });
 
   const handleSaveProfile = async (displayName: string) => {
     const response = await fetch('/api/profile/me', {
@@ -120,34 +144,6 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
       setStatus({ type: 'error', message: 'Network error. Please try again.' });
     }
   };
-
-  // Fetch referral stats on mount
-  useEffect(() => {
-    async function fetchReferralStats() {
-      try {
-        const response = await fetch('/api/referrals/info');
-        const data = await response.json();
-
-        if (data.ok) {
-          setReferralStats({
-            codesGenerated: data.codesGenerated,
-            codesAvailable: data.codesAvailable,
-            maxReferrals: data.maxReferrals,
-            activeReferrals: data.activeReferrals,
-            queuedReferrals: data.queuedReferrals,
-            totalReferrals: data.totalReferrals,
-            codes: data.codes,
-          });
-        }
-      } catch (err) {
-        console.error('Failed to load referral stats:', err);
-      } finally {
-        setLoadingReferrals(false);
-      }
-    }
-
-    fetchReferralStats();
-  }, []);
 
   return (
     <div className="space-y-8 max-w-4xl">
