@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { createAdminClient } from '@/lib/db/supabaseAdmin';
 import WaitlistClient from './WaitlistClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function WaitlistPage() {
   const session = await getServerSessionFromRequest();
 

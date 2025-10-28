@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   primary_email text NOT NULL UNIQUE,
   display_name text,
   avatar_url text,
-  max_referrals int NOT NULL DEFAULT 5,
+  max_referrals int NOT NULL DEFAULT 0,
   game_access_granted boolean NOT NULL DEFAULT false,
   waitlist_position int,
   waitlist_joined_at timestamptz,

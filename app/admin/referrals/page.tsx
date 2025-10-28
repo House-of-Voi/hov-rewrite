@@ -2,6 +2,8 @@ import React from 'react';
 import { requirePermission, PERMISSIONS } from '@/lib/auth/admin';
 import ReferralsTable from '@/components/admin/ReferralsTable';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ReferralsPage() {
   // Ensure user has permission to view referrals
   await requirePermission(PERMISSIONS.VIEW_REFERRALS);

@@ -5,12 +5,15 @@ import Modal from '@/components/Modal';
 import Card, { CardContent } from '@/components/Card';
 import Button from '@/components/Button';
 import CopyButton from '@/components/CopyButton';
+import Avatar from '@/components/Avatar';
 import { TicketIcon } from '@/components/icons';
 
 interface ReferralCodeInfo {
   id: string;
   code: string;
   referredProfileId: string | null;
+  referredUserName: string | null;
+  referredUserAvatar: string | null;
   attributedAt: string | null;
   convertedAt: string | null;
   deactivatedAt: string | null;
@@ -174,95 +177,90 @@ export default function ReferralCodesModal({ isOpen, onClose }: ReferralCodesMod
               </CardContent>
             </Card>
 
-            {/* Referral Codes List */}
-            {stats.codes.length > 0 && (
+            {/* Your Referrals */}
+            {stats.codes.filter(code => code.referredProfileId).length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-neutral-950 dark:text-white">Your Codes</h3>
-                {stats.codes.map((code) => {
-                  const isConverted = !!code.referredProfileId;
-                  const isPending = code.attributedAt && !code.convertedAt;
-                  const isUnused = !code.attributedAt;
-                  const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/r/${code.code}`;
-
-                  return (
-                    <Card key={code.id}>
-                      <CardContent className="space-y-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="font-mono text-2xl font-semibold text-primary-600 dark:text-primary-400">
-                                {code.code}
-                              </span>
-                              {isConverted && (
-                                <span className="px-2 py-0.5 bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300 text-xs rounded-full border border-success-300 dark:border-success-700 uppercase font-semibold">
-                                  Active
-                                </span>
-                              )}
-                              {isPending && (
-                                <span className="px-2 py-0.5 bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300 text-xs rounded-full border border-warning-300 dark:border-warning-700 uppercase font-semibold">
-                                  Pending
-                                </span>
-                              )}
-                              {isUnused && (
-                                <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs rounded-full border border-neutral-300 dark:border-neutral-700 uppercase font-semibold">
-                                  Unused
-                                </span>
-                              )}
-                              {code.deactivatedAt && (
-                                <span className="px-2 py-0.5 bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-300 text-xs rounded-full border border-error-300 dark:border-error-700 uppercase font-semibold">
-                                  Deactivated
-                                </span>
-                              )}
+                <h3 className="text-lg font-semibold text-neutral-950 dark:text-white">Your Referrals</h3>
+                <div className="space-y-2">
+                  {stats.codes
+                    .filter(code => code.referredProfileId)
+                    .map((code) => (
+                      <Card key={code.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Avatar
+                                src={code.referredUserAvatar}
+                                displayName={code.referredUserName}
+                                alt={code.referredUserName || 'User'}
+                                size="md"
+                              />
+                              <div>
+                                <p className="font-semibold text-neutral-950 dark:text-white">
+                                  {code.referredUserName || 'Anonymous User'}
+                                </p>
+                                <p className="text-xs text-neutral-700 dark:text-neutral-300">
+                                  Joined {new Date(code.convertedAt!).toLocaleDateString()}
+                                </p>
+                              </div>
                             </div>
+                            <div className="text-right">
+                              <span className="px-2 py-1 bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300 text-xs rounded-full border border-success-300 dark:border-success-700 uppercase font-semibold">
+                                Active
+                              </span>
+                              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-mono">{code.code}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+              </div>
+            )}
 
-                            {isConverted ? (
-                              <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                                Converted {new Date(code.convertedAt!).toLocaleDateString()}
-                              </p>
-                            ) : isPending ? (
-                              <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                                Link clicked {new Date(code.attributedAt!).toLocaleDateString()} • Awaiting signup
-                              </p>
-                            ) : code.deactivatedAt ? (
-                              <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                                Deactivated {new Date(code.deactivatedAt).toLocaleDateString()}
-                              </p>
-                            ) : (
-                              <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                                Created {new Date(code.createdAt).toLocaleDateString()} • Not yet shared
-                              </p>
-                            )}
-
-                            {!code.deactivatedAt && (
-                              <div className="mt-3 text-xs font-mono text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-900 px-3 py-2 rounded border border-neutral-300 dark:border-neutral-800">
+            {/* Available Codes */}
+            {stats.codes.filter(code => !code.referredProfileId && !code.deactivatedAt).length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-neutral-950 dark:text-white">Available Codes</h3>
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">Share these codes to invite new members</p>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {stats.codes
+                    .filter(code => !code.referredProfileId && !code.deactivatedAt)
+                    .map((code) => {
+                      const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/r/${code.code}`;
+                      return (
+                        <Card key={code.id}>
+                          <CardContent className="p-3">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="font-mono text-xl font-semibold text-primary-600 dark:text-primary-400">
+                                  {code.code}
+                                </span>
+                                <span className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs rounded-full border border-primary-300 dark:border-primary-700 uppercase font-semibold">
+                                  Ready
+                                </span>
+                              </div>
+                              <div className="text-xs font-mono text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-900 px-2 py-1.5 rounded border border-neutral-300 dark:border-neutral-800 break-all">
                                 {referralUrl}
                               </div>
-                            )}
-                          </div>
-
-                          <div className="flex flex-col gap-2">
-                            {!code.deactivatedAt && (
-                              <>
-                                <CopyButton text={referralUrl} label="Copy Link" />
-                                {!isConverted && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeactivate(code.id)}
-                                    disabled={deactivatingId === code.id}
-                                    className="text-error-600 dark:text-error-400 border-error-300 dark:border-error-700 hover:bg-error-50 dark:hover:bg-error-950"
-                                  >
-                                    {deactivatingId === code.id ? 'Deactivating...' : 'Deactivate'}
-                                  </Button>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                              <div className="flex gap-2">
+                                <CopyButton text={referralUrl} label="Copy" className="flex-1 text-xs" />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeactivate(code.id)}
+                                  disabled={deactivatingId === code.id}
+                                  className="text-error-600 dark:text-error-400 border-error-300 dark:border-error-700 hover:bg-error-50 dark:hover:bg-error-950 text-xs"
+                                >
+                                  {deactivatingId === code.id ? '...' : 'Remove'}
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                </div>
               </div>
             )}
 

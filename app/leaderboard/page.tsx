@@ -2,6 +2,8 @@ import React from 'react';
 import { Metadata } from 'next';
 import { Leaderboard } from '@/components/statistics/Leaderboard';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Leaderboard | House of Voi',
   description: 'Compete with other players on the House of Voi leaderboard',

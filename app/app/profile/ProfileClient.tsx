@@ -300,15 +300,16 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
         </CardContent>
       </Card>
 
-      {/* Referral Section */}
-      <Card id="referrals">
-        <CardHeader>
-          <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">Your Referral Code</h2>
-        </CardHeader>
-        <CardContent>
-          {loadingReferrals ? (
-            <p className="text-neutral-600 dark:text-neutral-400">Loading referral information...</p>
-          ) : referralStats ? (
+      {/* Referral Section - Only show if user has referral slots */}
+      {profile.max_referrals > 0 && (
+        <Card id="referrals">
+          <CardHeader>
+            <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">Your Referral Code</h2>
+          </CardHeader>
+          <CardContent>
+            {loadingReferrals ? (
+              <p className="text-neutral-600 dark:text-neutral-400">Loading referral information...</p>
+            ) : referralStats ? (
             <div className="space-y-6">
               {/* Referral Code Display */}
               <div className="text-center p-6 bg-gradient-to-r from-primary-100 dark:from-primary-600/10 to-accent-100 dark:to-accent-600/10 border-2 border-primary-300 dark:border-primary-500/30 rounded-xl">
@@ -393,7 +394,8 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
             <p className="text-error-600 dark:text-error-400">Failed to load referral information</p>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      )}
 
       {/* Account Actions */}
       <Card>

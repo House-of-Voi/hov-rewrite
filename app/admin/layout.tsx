@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { getAdminRole, getCurrentProfileId } from '@/lib/auth/admin';
 import AdminNav from '@/components/admin/AdminNav';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Check if user is authenticated and has admin access
   const profileId = await getCurrentProfileId();

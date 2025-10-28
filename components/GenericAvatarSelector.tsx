@@ -88,14 +88,6 @@ export default function GenericAvatarSelector({
         })}
       </div>
 
-      {/* Selected avatar info */}
-      {selectedAvatarId && (
-        <div className="text-center p-3 bg-gold-500/10 border border-gold-500/30 rounded-lg">
-          <p className="text-gold-400 font-semibold">
-            {GENERIC_AVATARS.find(a => a.id === selectedAvatarId)?.name} selected
-          </p>
-        </div>
-      )}
     </div>
   );
 }

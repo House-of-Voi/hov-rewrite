@@ -272,11 +272,11 @@ export default function OnboardingModal({
     >
       <div className="space-y-6">
         {/* Sign Out Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end -mt-2 mb-2">
           <button
             onClick={handleSignOut}
             disabled={isSubmitting}
-            className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 underline transition-colors"
+            className="text-xs text-neutral-500 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 underline transition-colors"
           >
             Sign Out
           </button>
@@ -334,7 +334,7 @@ export default function OnboardingModal({
         )}
 
         {/* Step content with smooth transitions */}
-        <div className="min-h-[300px]">
+        <div className="min-h-[400px] max-h-[500px] overflow-y-auto">
           {step === 'name' && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
@@ -398,8 +398,8 @@ export default function OnboardingModal({
 
           {step === 'avatar' && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-warning-500 dark:text-warning-400 mb-2">
+              <div className="text-center mb-4">
+                <h3 className="text-xl font-bold text-warning-500 dark:text-warning-400 mb-1">
                   Choose your avatar
                 </h3>
                 <p className="text-neutral-400 text-sm">

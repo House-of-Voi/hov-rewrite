@@ -171,7 +171,9 @@ export default function AvatarSelector({
         onSelectionChange?.(null);
       }
     } else if (mode === 'upload') {
-      fileInputRef.current?.click();
+      setAvatarMode('upload');
+      setSelectedGenericAvatar(null);
+      onSelectionChange?.(null);
     }
   };
 
@@ -224,25 +226,35 @@ export default function AvatarSelector({
         </div>
       )}
 
-      {/* Mode selector - only show if both options are enabled */}
+      {/* Tab selector - only show if both options are enabled */}
       {showModeSelector && (
-        <div className="flex gap-3">
-          <Button
-            variant={avatarMode === 'generic' || avatarMode === 'none' ? 'primary' : 'ghost'}
-            size="sm"
+        <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+          <button
             onClick={() => handleModeSwitch('generic')}
-            className="flex-1"
+            className={`
+              flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200
+              ${
+                avatarMode === 'generic' || avatarMode === 'none'
+                  ? 'bg-white dark:bg-neutral-700 text-warning-600 dark:text-warning-400 shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
+              }
+            `}
           >
             Choose Preset
-          </Button>
-          <Button
-            variant={avatarMode === 'upload' ? 'primary' : 'ghost'}
-            size="sm"
+          </button>
+          <button
             onClick={() => handleModeSwitch('upload')}
-            className="flex-1"
+            className={`
+              flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200
+              ${
+                avatarMode === 'upload'
+                  ? 'bg-white dark:bg-neutral-700 text-warning-600 dark:text-warning-400 shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
+              }
+            `}
           >
             Upload Image
-          </Button>
+          </button>
         </div>
       )}
 
@@ -262,90 +274,94 @@ export default function AvatarSelector({
         />
       )}
 
-      {/* Custom upload - drop zone */}
-      {allowCustomUpload && avatarMode === 'none' && !allowGenericAvatars && (
-        <div
-          onClick={handleDropZoneClick}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onKeyDown={handleDropZoneKeyDown}
-          role="button"
-          tabIndex={0}
-          aria-label="Upload avatar by clicking or dragging an image"
-          className={`
-            cursor-pointer border-2 border-dashed rounded-xl p-12 text-center transition-all
-            ${
-              isDragging
-                ? 'border-warning-500 bg-warning-50 dark:bg-warning-500/10'
-                : 'border-warning-300 dark:border-warning-500/30 hover:border-warning-500 dark:hover:border-warning-500/50 hover:bg-warning-50 dark:hover:bg-warning-500/5'
-            }
-          `}
-        >
-          <div className="flex flex-col items-center gap-4">
-            <div className="text-5xl">
-              {isDragging ? '📥' : '📷'}
-            </div>
-            <div>
-              <p className="text-warning-500 dark:text-warning-400 font-bold text-lg">
-                {isDragging ? 'Drop image here' : 'Choose an image'}
-              </p>
-              <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-2">
-                Click to browse or drag and drop
-              </p>
-              <p className="text-neutral-600 dark:text-neutral-500 text-xs mt-1">
-                Any image format • Any size (we&apos;ll optimize it)
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Upload editor */}
-      {allowCustomUpload && avatarMode === 'upload' && uploadedImage && (
+      {/* Upload tab content */}
+      {allowCustomUpload && avatarMode === 'upload' && (
         <div className="space-y-4">
-          <div className="flex flex-col items-center gap-4 p-6 border-2 border-warning-300 dark:border-warning-500/30 rounded-xl bg-neutral-100 dark:bg-neutral-900/50">
-            <AvatarEditor
-              ref={editorRef}
-              image={uploadedImage}
-              width={200}
-              height={200}
-              border={20}
-              borderRadius={100}
-              color={[0, 0, 0, 0.6]}
-              scale={scale}
-              rotate={0}
-              className="rounded-lg"
-            />
-
-            <div className="w-full space-y-2">
-              <label className="block text-sm font-semibold text-warning-500 dark:text-warning-400">
-                Zoom: {scale.toFixed(1)}x
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="3"
-                step="0.1"
-                value={scale}
-                onChange={(e) => handleScaleChange(parseFloat(e.target.value))}
-                className="w-full h-2 bg-neutral-300 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-          </div>
-
-          {showModeSelector && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearUpload}
-              className="w-full"
+          {/* Upload drop zone - only show when no image is uploaded */}
+          {!uploadedImage && (
+            <div
+              onClick={handleDropZoneClick}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onKeyDown={handleDropZoneKeyDown}
+              role="button"
+              tabIndex={0}
+              aria-label="Upload avatar by clicking or dragging an image"
+              className={`
+                cursor-pointer border-2 border-dashed rounded-xl p-8 text-center transition-all
+                ${
+                  isDragging
+                    ? 'border-warning-500 bg-warning-50 dark:bg-warning-500/10'
+                    : 'border-warning-300 dark:border-warning-500/30 hover:border-warning-500 dark:hover:border-warning-500/50 hover:bg-warning-50 dark:hover:bg-warning-500/5'
+                }
+              `}
             >
-              Choose Different Image
-            </Button>
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-4xl">
+                  {isDragging ? '📥' : '📷'}
+                </div>
+                <div>
+                  <p className="text-warning-500 dark:text-warning-400 font-bold text-lg">
+                    {isDragging ? 'Drop image here' : 'Choose an image'}
+                  </p>
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-2">
+                    Click to browse or drag and drop
+                  </p>
+                  <p className="text-neutral-600 dark:text-neutral-500 text-xs mt-1">
+                    JPG, PNG, WebP, or GIF • Max 2MB
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Image editor - show when image is uploaded */}
+          {uploadedImage && (
+            <div className="space-y-4">
+              <div className="flex flex-col items-center gap-4 p-4 border-2 border-warning-300 dark:border-warning-500/30 rounded-xl bg-neutral-100 dark:bg-neutral-900/50">
+                <AvatarEditor
+                  ref={editorRef}
+                  image={uploadedImage}
+                  width={200}
+                  height={200}
+                  border={20}
+                  borderRadius={100}
+                  color={[0, 0, 0, 0.6]}
+                  scale={scale}
+                  rotate={0}
+                  className="rounded-lg"
+                />
+
+                <div className="w-full space-y-2">
+                  <label className="block text-sm font-semibold text-warning-500 dark:text-warning-400">
+                    Zoom: {scale.toFixed(1)}x
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.1"
+                    value={scale}
+                    onChange={(e) => handleScaleChange(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-neutral-300 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearUpload}
+                className="w-full"
+              >
+                Choose Different Image
+              </Button>
+            </div>
           )}
         </div>
       )}
+
     </div>
   );
 }

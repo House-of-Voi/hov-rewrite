@@ -8,6 +8,10 @@ export interface ProfileData {
   primary_email: string;
   display_name: string | null;
   avatar_url: string | null;
+  max_referrals: number;
+  game_access_granted: boolean;
+  waitlist_position: number | null;
+  waitlist_joined_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -209,4 +213,51 @@ export async function getProfileIdByAccount(
     .single();
 
   return data?.profile_id || null;
+}
+
+/**
+ * Check if a user is an admin
+ *
+ * @param profileId - UUID of the profile
+ * @returns True if user has an admin role, false otherwise
+ */
+export async function isUserAdmin(profileId: string): Promise<boolean> {
+  const supabase = createAdminClient();
+
+  const { data } = await supabase
+    .from('admin_roles')
+    .select('profile_id')
+    .eq('profile_id', profileId)
+    .single();
+
+  return !!data;
+}
+
+/**
+ * Check if a user is activated (has entered a referral code)
+ *
+ * A user is considered activated when they exist in the referrals table
+ * as a referred_profile_id, meaning they have entered a referral code.
+ * Admins are automatically considered activated.
+ *
+ * @param profileId - UUID of the profile
+ * @returns True if user has entered a referral code or is an admin, false otherwise
+ */
+export async function isUserActivated(profileId: string): Promise<boolean> {
+  const supabase = createAdminClient();
+
+  // Check if user is an admin first
+  const isAdmin = await isUserAdmin(profileId);
+  if (isAdmin) {
+    return true;
+  }
+
+  // Check if user has a referral
+  const { data } = await supabase
+    .from('referrals')
+    .select('id')
+    .eq('referred_profile_id', profileId)
+    .single();
+
+  return !!data;
 }

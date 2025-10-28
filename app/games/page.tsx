@@ -3,6 +3,8 @@ import Card, { CardContent, CardHeader } from '@/components/Card';
 import Button from '@/components/Button';
 import { SlotMachineIcon, TrendingUpIcon } from '@/components/icons';
 import ChainBadge from '@/components/ChainBadge';
+
+export const dynamic = 'force-dynamic';
 import {
   getAggregatedProfileStatsSafe,
   serializeAggregatedProfileStats,

@@ -4,6 +4,8 @@ import ChainBadge from '@/components/ChainBadge';
 import { getServerSessionFromRequest } from '@/lib/auth/session';
 import { DEMO_MODE } from '@/lib/utils/env';
 
+export const dynamic = 'force-dynamic';
+
 type SupportedChain = 'base' | 'voi' | 'solana';
 type SlotResult = { reels: string[]; multiplier: number };
 type DiceResult = { roll: number; prediction: string; multiplier: number };

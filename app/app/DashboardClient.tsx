@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSignOut } from '@coinbase/cdp-hooks';
 import Card, { CardContent, CardHeader } from '@/components/Card';
 import Button from '@/components/Button';
+import Input from '@/components/Input';
 import Avatar from '@/components/Avatar';
 import AvatarEditModal from '@/components/AvatarEditModal';
 import ProfileEditModal from '@/components/ProfileEditModal';
@@ -16,6 +17,7 @@ import type { ProfileWithAccounts } from '@/lib/profile/data';
 
 interface DashboardClientProps {
   initialData: ProfileWithAccounts;
+  isActivated: boolean;
 }
 
 interface ReferralCodeInfo {
@@ -38,12 +40,14 @@ interface ReferralStats {
   codes: ReferralCodeInfo[];
 }
 
-export default function DashboardClient({ initialData }: DashboardClientProps) {
+export default function DashboardClient({ initialData, isActivated }: DashboardClientProps) {
   const [profile, setProfile] = useState(initialData.profile);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
   const [isReferralCodesModalOpen, setIsReferralCodesModalOpen] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [referralCode, setReferralCode] = useState('');
+  const [isLinkingReferral, setIsLinkingReferral] = useState(false);
 
   const { signOut } = useSignOut();
 
@@ -133,6 +137,43 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
     setTimeout(() => setStatus(null), 5000);
   };
 
+  const handleLinkReferralCode = async () => {
+    if (!referralCode || referralCode.length !== 7) {
+      setStatus({ type: 'error', message: 'Please enter a valid 7-character referral code' });
+      return;
+    }
+
+    setIsLinkingReferral(true);
+    setStatus(null);
+
+    try {
+      const response = await fetch('/api/profile/link-referral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralCode: referralCode.toUpperCase() }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        setStatus({ type: 'error', message: result.error || 'Failed to link referral code' });
+        setIsLinkingReferral(false);
+        return;
+      }
+
+      setStatus({ type: 'success', message: 'Referral code activated! Refreshing...' });
+
+      // Refresh the page to show activated state
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      console.error('Link referral error:', error);
+      setStatus({ type: 'error', message: 'Failed to link referral code. Please try again.' });
+      setIsLinkingReferral(false);
+    }
+  };
+
   const handleDeleteAvatar = async () => {
     if (!confirm('Are you sure you want to delete your avatar?')) return;
 
@@ -177,6 +218,62 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
         >
           {status.message}
         </div>
+      )}
+
+      {/* Waitlist/Activation Alert - Show if user is not activated */}
+      {!isActivated && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center">
+                  <span className="text-2xl">⏳</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-neutral-950 dark:text-white mb-2">
+                    Account Not Yet Activated
+                  </h3>
+                  <p className="text-neutral-700 dark:text-neutral-300 mb-4">
+                    Enter a referral code to activate your account and access all features.
+                  </p>
+
+                  <div className="flex gap-3">
+                    <Input
+                      type="text"
+                      value={referralCode}
+                      onChange={(e) => {
+                        setReferralCode(e.target.value.toUpperCase());
+                        setStatus(null);
+                      }}
+                      placeholder="Enter 7-character code"
+                      maxLength={7}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && referralCode.length === 7) {
+                          handleLinkReferralCode();
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={handleLinkReferralCode}
+                      disabled={isLinkingReferral || referralCode.length !== 7}
+                    >
+                      {isLinkingReferral ? 'Activating...' : 'Activate'}
+                    </Button>
+                  </div>
+
+                  {referralCode && referralCode.length !== 7 && (
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+                      {7 - referralCode.length} character{7 - referralCode.length !== 1 ? 's' : ''} remaining
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Profile Hero Section */}
@@ -275,15 +372,16 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
         <BalancesCard address={primaryVoiAccount.address} />
       )}
 
-      {/* Referral Section */}
-      <Card id="referrals">
-        <CardHeader>
-          <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Your Referral Codes</h2>
-        </CardHeader>
-        <CardContent>
-          {loadingReferrals ? (
-            <p className="text-neutral-700 dark:text-neutral-300">Loading referral information...</p>
-          ) : referralStats ? (
+      {/* Referral Section - Only show if user has referral slots */}
+      {profile.max_referrals > 0 && (
+        <Card id="referrals">
+          <CardHeader>
+            <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Your Referral Codes</h2>
+          </CardHeader>
+          <CardContent>
+            {loadingReferrals ? (
+              <p className="text-neutral-700 dark:text-neutral-300">Loading referral information...</p>
+            ) : referralStats ? (
             <div className="space-y-6">
               {/* Referral Codes Summary */}
               <div className="text-center p-6 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-950/30 dark:to-accent-950/30 border border-primary-200 dark:border-primary-800 rounded-xl">
@@ -368,7 +466,8 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
             <p className="text-error-600 dark:text-error-400">Failed to load referral information</p>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      )}
 
       {/* Account Actions */}
       <Card>

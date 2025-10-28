@@ -2,6 +2,8 @@ import Button from '@/components/Button';
 import { SlotMachineIcon, DiceIcon, CardSuitIcon, BoltIcon, LockIcon, GlobeIcon, CoinsIcon } from '@/components/icons';
 import { isAdmin } from '@/lib/auth/admin';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   const isAdminUser = await isAdmin(); // Temporary: homepage options restricted to admins
   const cardInteractivityClasses = isAdminUser

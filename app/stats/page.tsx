@@ -2,6 +2,8 @@ import React from 'react';
 import { Metadata } from 'next';
 import { PlatformStats } from '@/components/statistics/PlatformStats';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Statistics | House of Voi',
   description: 'View platform statistics for House of Voi games',

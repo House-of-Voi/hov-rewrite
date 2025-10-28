@@ -123,6 +123,8 @@ export interface ReferralCodeInfo {
   id: string;
   code: string;
   referredProfileId: string | null;
+  referredUserName: string | null;
+  referredUserAvatar: string | null;
   attributedAt: string | null;
   convertedAt: string | null;
   deactivatedAt: string | null;
@@ -155,10 +157,16 @@ export async function getReferralStats(
     return null;
   }
 
-  // Get all referral codes for this user
+  // Get all referral codes for this user with referred user info
   const { data: codes, error: codesError } = await supabase
     .from('referral_codes')
-    .select('*')
+    .select(`
+      *,
+      referred_profile:profiles!referral_codes_referred_profile_id_fkey (
+        display_name,
+        avatar_url
+      )
+    `)
     .eq('referrer_profile_id', profileId)
     .order('created_at', { ascending: false });
 
@@ -212,14 +220,27 @@ export async function getReferralStats(
     activeReferrals: activeCount as number,
     queuedReferrals: queuedCount || 0,
     totalReferrals: totalCount || 0,
-    codes: codes.map((c) => ({
-      id: c.id,
-      code: c.code,
-      referredProfileId: c.referred_profile_id,
-      attributedAt: c.attributed_at,
-      convertedAt: c.converted_at,
-      deactivatedAt: c.deactivated_at,
-      createdAt: c.created_at,
-    })),
+    codes: codes.map((c) => {
+      // Supabase may return referred_profile as an array or object
+      const referredProfile = c.referred_profile
+        ? (Array.isArray(c.referred_profile) ? c.referred_profile[0] : c.referred_profile)
+        : null;
+
+      return {
+        id: c.id,
+        code: c.code,
+        referredProfileId: c.referred_profile_id,
+        referredUserName: referredProfile
+          ? (referredProfile as { display_name: string | null; avatar_url: string | null }).display_name
+          : null,
+        referredUserAvatar: referredProfile
+          ? (referredProfile as { display_name: string | null; avatar_url: string | null }).avatar_url
+          : null,
+        attributedAt: c.attributed_at,
+        convertedAt: c.converted_at,
+        deactivatedAt: c.deactivated_at,
+        createdAt: c.created_at,
+      };
+    }),
   };
 }

@@ -5,6 +5,8 @@ import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { SlotMachineIcon, CoinsIcon } from '@/components/icons';
 
+export const dynamic = 'force-dynamic';
+
 // Slot symbols
 const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '💎', '⭐', '7️⃣'];
 

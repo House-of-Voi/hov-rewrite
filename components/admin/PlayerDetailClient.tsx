@@ -185,7 +185,7 @@ export default function PlayerDetailClient({ playerId }: PlayerDetailClientProps
               <input
                 id="max-referrals"
                 type="number"
-                value={editForm.max_referrals || 5}
+                value={editForm.max_referrals || 0}
                 onChange={(e) =>
                   setEditForm({ ...editForm, max_referrals: parseInt(e.target.value) })
                 }

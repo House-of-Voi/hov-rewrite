@@ -8,6 +8,8 @@ import { SpinHistory } from '@/components/statistics/SpinHistory';
 import { formatVoi, formatPercent } from '@/lib/utils/format';
 import { useRouter } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 const ALPHA_SLOTS_CONTRACT_ID = 40879920;
 
 export default function MyStatsPage() {

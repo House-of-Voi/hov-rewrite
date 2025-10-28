@@ -2,6 +2,8 @@ import React from 'react';
 import { requirePermission, PERMISSIONS } from '@/lib/auth/admin';
 import PlayersTable from '@/components/admin/PlayersTable';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PlayersPage() {
   // Ensure user has permission to view players
   await requirePermission(PERMISSIONS.VIEW_PLAYERS);

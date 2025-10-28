@@ -1,43 +1,60 @@
-import { cookies } from 'next/headers';
-import Link from 'next/link';
-import { validateReferralCode } from '@/lib/referrals/validation';
-import { notFound } from 'next/navigation';
-import { createAdminClient } from '@/lib/db/supabaseAdmin';
+'use client';
 
-export default async function ReferralPage({
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { validateAndAttributeReferral } from './actions';
+import type { ReferralValidationResult } from '@/lib/referrals/validation';
+
+export const dynamic = 'force-dynamic';
+
+export default function ReferralPage({
   params,
 }: {
   params: Promise<{ code: string }>;
 }) {
-  const resolvedParams = await params;
-  const code = resolvedParams.code.toUpperCase();
+  const [validation, setValidation] = useState<ReferralValidationResult | null>(
+    null
+  );
+  const [code, setCode] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Validate the referral code
-  const validation = await validateReferralCode(code);
+  useEffect(() => {
+    async function init() {
+      try {
+        const resolvedParams = await params;
+        const normalizedCode = resolvedParams.code.toUpperCase();
+        setCode(normalizedCode);
 
-  // If code doesn't exist, show 404
-  if (!validation.valid || !validation.exists) {
-    notFound();
-  }
+        // Validate referral code and update database
+        const result = await validateAndAttributeReferral(normalizedCode);
+        setValidation(result);
 
-  // Set cookie regardless of capacity (user can still sign up)
-  const cookieStore = await cookies();
-  cookieStore.set('hov_ref', code, {
-    httpOnly: false,
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30,
-  });
+        // Set cookie in browser (httpOnly: false allows JS access)
+        document.cookie = `hov_ref=${normalizedCode}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+      } catch (error) {
+        console.error('Error loading referral:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-  // Update attributed_at timestamp if this is the first time the link was clicked
-  if (validation.codeId) {
-    const supabase = createAdminClient();
-    await supabase
-      .from('referral_codes')
-      .update({
-        attributed_at: new Date().toISOString(),
-      })
-      .eq('id', validation.codeId)
-      .is('attributed_at', null); // Only update if not already set
+    init();
+  }, [params]);
+
+  if (isLoading || !validation) {
+    return (
+      <div className="max-w-3xl mx-auto space-y-8 py-8">
+        <div className="text-center space-y-4">
+          <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full">
+            <span className="text-white font-semibold">Loading...</span>
+          </div>
+          <h1 className="text-4xl font-bold">Join House of Voi</h1>
+          <p className="text-lg text-neutral-700 dark:text-neutral-300">
+            Validating your referral code...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

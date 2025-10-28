@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { requirePermission, PERMISSIONS } from '@/lib/auth/admin';
 import PlayerDetailClient from '@/components/admin/PlayerDetailClient';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
