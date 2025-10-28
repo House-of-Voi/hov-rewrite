@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSignOut } from '@coinbase/cdp-hooks';
 import Modal from './Modal';
 import Input from './Input';
 import Button from './Button';
-import GenericAvatarSelector from './GenericAvatarSelector';
-import AvatarEditor from 'react-avatar-editor';
+import AvatarSelector, { type AvatarSelection } from './AvatarSelector';
 import { generateAvatarDataUrl, GENERIC_AVATARS } from '@/lib/utils/genericAvatars';
 
 interface OnboardingModalProps {
@@ -16,7 +15,6 @@ interface OnboardingModalProps {
 }
 
 type Step = 'name' | 'referral' | 'avatar';
-type AvatarMode = 'none' | 'generic' | 'upload';
 
 /**
  * Onboarding modal for first-time users
@@ -36,16 +34,11 @@ export default function OnboardingModal({
   const [step, setStep] = useState<Step>('name');
   const [displayName, setDisplayName] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [avatarMode, setAvatarMode] = useState<AvatarMode>('none');
-  const [selectedGenericAvatar, setSelectedGenericAvatar] = useState<string | null>(null);
-  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
-  const [scale, setScale] = useState(1.2);
+  const [avatarSelection, setAvatarSelection] = useState<AvatarSelection | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showReferralBypass, setShowReferralBypass] = useState(false);
 
-  const editorRef = useRef<AvatarEditor>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { signOut } = useSignOut();
 
   const handleSignOut = async () => {
@@ -76,29 +69,6 @@ export default function OnboardingModal({
   const totalSteps = 3;
 
   const canProceedFromName = displayName.trim().length > 0;
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-      setError('Please upload a valid image file (JPG, PNG, WebP, or GIF)');
-      return;
-    }
-
-    setUploadedImage(file);
-    setAvatarMode('upload');
-    setSelectedGenericAvatar(null);
-    setError(null);
-  };
-
-  const handleGenericAvatarSelect = (avatarId: string) => {
-    setSelectedGenericAvatar(avatarId);
-    setAvatarMode('generic');
-    setUploadedImage(null);
-    setError(null);
-  };
 
   const handleNext = async () => {
     if (step === 'name' && canProceedFromName) {
@@ -218,18 +188,52 @@ export default function OnboardingModal({
       }
 
       // 3. Set avatar if selected
-      if (avatarMode === 'generic' && selectedGenericAvatar) {
-        // Generate the data URL for the generic avatar
-        const avatar = GENERIC_AVATARS.find(a => a.id === selectedGenericAvatar);
-        if (avatar) {
-          const dataUrl = generateAvatarDataUrl(avatar);
+      if (avatarSelection) {
+        if (avatarSelection.mode === 'generic' && avatarSelection.genericAvatarId) {
+          // Generate the data URL for the generic avatar
+          const avatar = GENERIC_AVATARS.find(a => a.id === avatarSelection.genericAvatarId);
+          if (avatar) {
+            const dataUrl = generateAvatarDataUrl(avatar);
 
-          // Convert data URL to blob and upload
-          const response = await fetch(dataUrl);
-          const blob = await response.blob();
+            // Convert data URL to blob and upload
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+
+            const formData = new FormData();
+            formData.append('avatar', blob, `${avatar.id}.svg`);
+
+            const avatarResponse = await fetch('/api/profile/avatar', {
+              method: 'POST',
+              body: formData,
+            });
+
+            if (!avatarResponse.ok) {
+              const result = await avatarResponse.json();
+              console.warn('Avatar upload failed:', result.error);
+              // Don't fail onboarding, just log the error
+            }
+          }
+        } else if (
+          avatarSelection.mode === 'upload' &&
+          avatarSelection.editorRef?.current &&
+          avatarSelection.uploadedFile
+        ) {
+          // Get cropped image from editor
+          const canvas = avatarSelection.editorRef.current.getImageScaledToCanvas();
+
+          const blob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(
+              (blob) => {
+                if (blob) resolve(blob);
+                else reject(new Error('Failed to create image blob'));
+              },
+              'image/webp',
+              0.9
+            );
+          });
 
           const formData = new FormData();
-          formData.append('avatar', blob, `${avatar.id}.svg`);
+          formData.append('avatar', blob, 'avatar.webp');
 
           const avatarResponse = await fetch('/api/profile/avatar', {
             method: 'POST',
@@ -241,34 +245,6 @@ export default function OnboardingModal({
             console.warn('Avatar upload failed:', result.error);
             // Don't fail onboarding, just log the error
           }
-        }
-      } else if (avatarMode === 'upload' && editorRef.current && uploadedImage) {
-        // Get cropped image from editor
-        const canvas = editorRef.current.getImageScaledToCanvas();
-
-        const blob = await new Promise<Blob>((resolve, reject) => {
-          canvas.toBlob(
-            (blob) => {
-              if (blob) resolve(blob);
-              else reject(new Error('Failed to create image blob'));
-            },
-            'image/webp',
-            0.9
-          );
-        });
-
-        const formData = new FormData();
-        formData.append('avatar', blob, 'avatar.webp');
-
-        const avatarResponse = await fetch('/api/profile/avatar', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!avatarResponse.ok) {
-          const result = await avatarResponse.json();
-          console.warn('Avatar upload failed:', result.error);
-          // Don't fail onboarding, just log the error
         }
       }
 
@@ -431,92 +407,12 @@ export default function OnboardingModal({
                 </p>
               </div>
 
-              {/* Avatar mode selector */}
-              <div className="flex gap-3 mb-4">
-                <Button
-                  variant={avatarMode === 'generic' || avatarMode === 'none' ? 'primary' : 'ghost'}
-                  size="sm"
-                  onClick={() => {
-                    setAvatarMode(selectedGenericAvatar ? 'generic' : 'none');
-                    setUploadedImage(null);
-                  }}
-                  className="flex-1"
-                >
-                  Choose Preset
-                </Button>
-                <Button
-                  variant={avatarMode === 'upload' ? 'primary' : 'ghost'}
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-1"
-                >
-                  Upload Image
-                </Button>
-              </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={handleFileSelect}
-                className="hidden"
+              {/* Unified Avatar Selector */}
+              <AvatarSelector
+                onSelectionChange={setAvatarSelection}
+                allowCustomUpload={true}
+                allowGenericAvatars={true}
               />
-
-              {/* Generic avatar selector */}
-              {(avatarMode === 'none' || avatarMode === 'generic') && (
-                <GenericAvatarSelector
-                  selectedAvatarId={selectedGenericAvatar}
-                  onSelect={handleGenericAvatarSelect}
-                />
-              )}
-
-              {/* Upload editor */}
-              {avatarMode === 'upload' && uploadedImage && (
-                <div className="space-y-4">
-                  <div className="flex flex-col items-center gap-4 p-6 border-2 border-warning-300 dark:border-warning-500/30 rounded-xl bg-neutral-100 dark:bg-neutral-900/50">
-                    <AvatarEditor
-                      ref={editorRef}
-                      image={uploadedImage}
-                      width={200}
-                      height={200}
-                      border={20}
-                      borderRadius={100}
-                      color={[0, 0, 0, 0.6]}
-                      scale={scale}
-                      rotate={0}
-                      className="rounded-lg"
-                    />
-
-                    <div className="w-full space-y-2">
-                      <label className="block text-sm font-semibold text-warning-500 dark:text-warning-400">
-                        Zoom: {scale.toFixed(1)}x
-                      </label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="3"
-                        step="0.1"
-                        value={scale}
-                        onChange={(e) => setScale(parseFloat(e.target.value))}
-                        className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer"
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setAvatarMode('none');
-                      setUploadedImage(null);
-                      if (fileInputRef.current) fileInputRef.current.value = '';
-                    }}
-                    className="w-full"
-                  >
-                    Choose Different Image
-                  </Button>
-                </div>
-              )}
             </div>
           )}
         </div>

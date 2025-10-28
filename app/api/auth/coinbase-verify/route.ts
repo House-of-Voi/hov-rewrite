@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Look up existing profile by email or phone
-    const { data: profile, error: profileFetchError } = await supabase
+    const { data: profile } = await supabase
       .from('profiles')
       .select('id, primary_email')
       .eq('primary_email', identity)
@@ -179,6 +179,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Step 2: Store Base (EVM) account fetched from CDP
+    if (!finalProfile) {
+      throw new Error('Failed to resolve profile during Coinbase verification');
+    }
+
     await supabase.from('accounts').upsert(
       {
         profile_id: finalProfile.id,

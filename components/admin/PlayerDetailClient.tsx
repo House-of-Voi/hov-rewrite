@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { PlayerDetail } from '@/lib/types/admin';
 import { formatNumberCompact } from '@/lib/utils/format';
 
@@ -15,11 +15,7 @@ export default function PlayerDetailClient({ playerId }: PlayerDetailClientProps
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<PlayerDetail>>({});
 
-  useEffect(() => {
-    fetchPlayer();
-  }, [playerId]);
-
-  const fetchPlayer = async () => {
+  const fetchPlayer = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -39,7 +35,11 @@ export default function PlayerDetailClient({ playerId }: PlayerDetailClientProps
     } finally {
       setLoading(false);
     }
-  };
+  }, [playerId]);
+
+  useEffect(() => {
+    fetchPlayer();
+  }, [fetchPlayer]);
 
   const handleSave = async () => {
     try {

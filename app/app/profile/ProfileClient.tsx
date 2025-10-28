@@ -165,8 +165,8 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
   return (
     <div className="space-y-8 max-w-4xl">
       <div>
-        <h1 className="text-4xl font-black text-gold-400 neon-text uppercase">Your Profile</h1>
-        <p className="text-neutral-400 mt-2">
+        <h1 className="text-4xl font-black text-warning-500 dark:text-warning-400 neon-text uppercase">Your Profile</h1>
+        <p className="text-neutral-600 dark:text-neutral-400 mt-2">
           Manage your account information, linked wallets, and referral codes.
         </p>
       </div>
@@ -176,8 +176,8 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
         <div
           className={`p-4 rounded-xl text-center font-semibold ${
             status.type === 'success'
-              ? 'bg-green-500/20 text-green-400 border-2 border-green-500/30'
-              : 'bg-ruby-500/20 text-ruby-400 border-2 border-ruby-500/30'
+              ? 'bg-success-100 dark:bg-success-500/20 text-success-600 dark:text-success-400 border-2 border-success-300 dark:border-success-500/30'
+              : 'bg-error-100 dark:bg-error-500/20 text-error-600 dark:text-error-400 border-2 border-error-300 dark:border-error-500/30'
           }`}
         >
           {status.message}
@@ -197,16 +197,16 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
               onEditClick={() => setIsAvatarModalOpen(true)}
             />
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gold-400 uppercase">
+              <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">
                 {profile.display_name || 'Your Profile'}
               </h2>
-              <p className="text-neutral-400 text-sm mt-1">{profile.primary_email}</p>
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-1">{profile.primary_email}</p>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h3 className="text-lg font-bold text-gold-400 uppercase mb-4">
+            <h3 className="text-lg font-bold text-warning-500 dark:text-warning-400 uppercase mb-4">
               Profile Information
             </h3>
             <div className="grid md:grid-cols-2 gap-6">
@@ -264,7 +264,7 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
       <Card id="accounts">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gold-400 uppercase">Your Accounts</h2>
+            <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">Your Accounts</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -274,13 +274,13 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
             .map((account) => (
               <div
                 key={account.id}
-                className="flex items-center justify-between p-4 border-2 border-gold-500/30 rounded-lg bg-gold-500/5"
+                className="flex items-center justify-between p-4 border-2 border-warning-300 dark:border-warning-500/30 rounded-lg bg-warning-50 dark:bg-warning-500/5"
               >
                 <div className="flex items-center gap-4 flex-1">
                   <ChainBadge chain={account.chain} />
                   <div className="flex-1">
-                    <div className="font-mono text-sm text-neutral-300">{account.address}</div>
-                    <div className="text-xs text-neutral-500 mt-1">
+                    <div className="font-mono text-sm text-neutral-700 dark:text-neutral-300">{account.address}</div>
+                    <div className="text-xs text-neutral-600 dark:text-neutral-500 mt-1">
                       {account.wallet_provider === 'coinbase-embedded'
                         ? 'From Coinbase Wallet'
                         : 'External Wallet'}
@@ -290,7 +290,7 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
                 </div>
                 <button
                   onClick={() => handleCopyAddress(account.address)}
-                  className="px-4 py-2 text-sm border border-gold-500/30 text-gold-400 rounded hover:bg-gold-500/10 transition-colors font-semibold"
+                  className="px-4 py-2 text-sm border border-warning-300 dark:border-warning-500/30 text-warning-600 dark:text-warning-400 rounded hover:bg-warning-50 dark:hover:bg-warning-500/10 transition-colors font-semibold"
                 >
                   Copy Address
                 </button>
@@ -303,66 +303,66 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
       {/* Referral Section */}
       <Card id="referrals">
         <CardHeader>
-          <h2 className="text-2xl font-bold text-gold-400 uppercase">Your Referral Code</h2>
+          <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">Your Referral Code</h2>
         </CardHeader>
         <CardContent>
           {loadingReferrals ? (
-            <p className="text-neutral-400">Loading referral information...</p>
+            <p className="text-neutral-600 dark:text-neutral-400">Loading referral information...</p>
           ) : referralStats ? (
             <div className="space-y-6">
               {/* Referral Code Display */}
-              <div className="text-center p-6 bg-gradient-to-r from-blue-600/10 to-purple-600/10 border-2 border-blue-500/30 rounded-xl">
-                <p className="text-neutral-400 text-sm mb-2">Your Unique Referral Code</p>
-                <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
+              <div className="text-center p-6 bg-gradient-to-r from-primary-100 dark:from-primary-600/10 to-accent-100 dark:to-accent-600/10 border-2 border-primary-300 dark:border-primary-500/30 rounded-xl">
+                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">Your Unique Referral Code</p>
+                <div className="inline-block px-6 py-3 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg">
                   <span className="text-3xl font-black text-white font-mono tracking-wider">
                     {referralStats.referralCode}
                   </span>
                 </div>
-                <p className="text-neutral-500 text-xs mt-3 font-mono">
+                <p className="text-neutral-600 dark:text-neutral-500 text-xs mt-3 font-mono">
                   {window.location.origin}/r/{referralStats.referralCode}
                 </p>
               </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <div className="text-2xl font-black text-green-400">
+                <div className="text-center p-4 bg-success-100 dark:bg-success-500/10 border border-success-300 dark:border-success-500/30 rounded-lg">
+                  <div className="text-2xl font-black text-success-600 dark:text-success-400">
                     {referralStats.activeReferrals}
                   </div>
-                  <p className="text-xs text-neutral-400 mt-1">Active</p>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">Active</p>
                 </div>
-                <div className="text-center p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <div className="text-2xl font-black text-yellow-400">
+                <div className="text-center p-4 bg-warning-100 dark:bg-warning-500/10 border border-warning-300 dark:border-warning-500/30 rounded-lg">
+                  <div className="text-2xl font-black text-warning-600 dark:text-warning-400">
                     {referralStats.queuedReferrals}
                   </div>
-                  <p className="text-xs text-neutral-400 mt-1">Queued</p>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">Queued</p>
                 </div>
-                <div className="text-center p-4 bg-gold-500/10 border border-gold-500/30 rounded-lg">
-                  <div className="text-2xl font-black text-gold-400">
+                <div className="text-center p-4 bg-warning-100 dark:bg-warning-500/10 border border-warning-300 dark:border-warning-500/30 rounded-lg">
+                  <div className="text-2xl font-black text-warning-600 dark:text-warning-400">
                     {referralStats.totalReferrals}
                   </div>
-                  <p className="text-xs text-neutral-400 mt-1">Total</p>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">Total</p>
                 </div>
               </div>
 
               {/* Capacity Bar */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-neutral-400">Referral Capacity</span>
-                  <span className="text-gold-400 font-bold">
+                  <span className="text-neutral-600 dark:text-neutral-400">Referral Capacity</span>
+                  <span className="text-warning-500 dark:text-warning-400 font-bold">
                     {referralStats.activeReferrals} / {referralStats.maxReferrals}
                   </span>
                 </div>
-                <div className="w-full bg-neutral-800 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-neutral-200 dark:bg-neutral-800 rounded-full h-3 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-primary-500 to-accent-500 transition-all duration-500"
                     style={{
                       width: `${(referralStats.activeReferrals / referralStats.maxReferrals) * 100}%`,
                     }}
                   />
                 </div>
                 {referralStats.queuedReferrals > 0 && (
-                  <p className="text-sm text-yellow-400">
+                  <p className="text-sm text-warning-600 dark:text-warning-400">
                     💡 {referralStats.queuedReferrals} referral
                     {referralStats.queuedReferrals !== 1 ? 's' : ''} waiting in queue
                   </p>
@@ -390,7 +390,7 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
               </div>
             </div>
           ) : (
-            <p className="text-ruby-400">Failed to load referral information</p>
+            <p className="text-error-600 dark:text-error-400">Failed to load referral information</p>
           )}
         </CardContent>
       </Card>
@@ -398,14 +398,14 @@ export default function ProfileClient({ initialData }: ProfileClientProps) {
       {/* Account Actions */}
       <Card>
         <CardHeader>
-          <h2 className="text-2xl font-bold text-gold-400 uppercase">Account Actions</h2>
+          <h2 className="text-2xl font-bold text-warning-500 dark:text-warning-400 uppercase">Account Actions</h2>
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
             <Button variant="ghost" size="md" onClick={handleLogout}>
               Sign Out
             </Button>
-            <button className="px-6 py-3 border-2 border-ruby-500/30 text-ruby-400 rounded-xl font-bold uppercase tracking-wide hover:bg-ruby-500/10 transition-colors">
+            <button className="px-6 py-3 border-2 border-error-300 dark:border-error-500/30 text-error-600 dark:text-error-400 rounded-xl font-bold uppercase tracking-wide hover:bg-error-50 dark:hover:bg-error-500/10 transition-colors">
               Delete Account
             </button>
           </div>

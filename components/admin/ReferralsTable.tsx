@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ReferralCodeItem, PaginatedResponse, ReferralStats } from '@/lib/types/admin';
 
 export default function ReferralsTable() {
@@ -18,12 +18,7 @@ export default function ReferralsTable() {
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  useEffect(() => {
-    fetchReferrals();
-    fetchStats();
-  }, [pagination.page, statusFilter]);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/referrals?stats_only=true');
       const data = await response.json();
@@ -34,9 +29,9 @@ export default function ReferralsTable() {
     } catch (err) {
       console.error('Error fetching referral stats:', err);
     }
-  };
+  }, []);
 
-  const fetchReferrals = async () => {
+  const fetchReferrals = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -64,7 +59,12 @@ export default function ReferralsTable() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.limit, pagination.page, statusFilter]);
+
+  useEffect(() => {
+    fetchReferrals();
+    fetchStats();
+  }, [fetchReferrals, fetchStats]);
 
   const getStatusBadge = (referral: ReferralCodeItem) => {
     if (referral.deactivated_at) {

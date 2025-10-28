@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Card, { CardContent } from '@/components/Card';
 import ChainBadge from '@/components/ChainBadge';
@@ -23,11 +23,7 @@ export default function PlayersTable() {
   const [waitlistFilter, setWaitlistFilter] = useState<string>('all');
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    fetchPlayers();
-  }, [pagination.page, search, gameAccessFilter, waitlistFilter]);
-
-  const fetchPlayers = async () => {
+  const fetchPlayers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -57,7 +53,11 @@ export default function PlayersTable() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [gameAccessFilter, pagination.limit, pagination.page, search, waitlistFilter]);
+
+  useEffect(() => {
+    fetchPlayers();
+  }, [fetchPlayers]);
 
   const handleBulkAction = async (action: string) => {
     if (selectedPlayers.size === 0) {

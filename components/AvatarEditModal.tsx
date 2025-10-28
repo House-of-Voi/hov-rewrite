@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import AvatarEditor from 'react-avatar-editor';
+import { useState } from 'react';
 import Button from './Button';
+import AvatarSelector, { type AvatarSelection } from './AvatarSelector';
+import { generateAvatarDataUrl, GENERIC_AVATARS } from '@/lib/utils/genericAvatars';
 
 interface AvatarEditModalProps {
   isOpen: boolean;
@@ -14,13 +15,13 @@ interface AvatarEditModalProps {
 }
 
 /**
- * Modal for editing/uploading avatar with cropping
+ * Modal for editing/uploading avatar
  *
  * Features:
- * - Click or drag-and-drop to select image
- * - Auto-compresses large images instead of rejecting
- * - Cropping with zoom control
- * - 512x512 output resolution
+ * - Generic preset avatars
+ * - Custom image upload with cropping
+ * - Auto-compresses large images
+ * - Delete existing avatar
  */
 export default function AvatarEditModal({
   isOpen,
@@ -30,146 +31,85 @@ export default function AvatarEditModal({
   onUploadError,
   onDelete,
 }: AvatarEditModalProps) {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [scale, setScale] = useState(1.2);
+  const [avatarSelection, setAvatarSelection] = useState<AvatarSelection | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const editorRef = useRef<AvatarEditor>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
-  const compressImage = async (file: File): Promise<File> => {
-    // If already small enough, return as-is
-    if (file.size <= 2 * 1024 * 1024) {
-      return file;
-    }
-
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-
-          // Scale down if too large (max 2048px on longest side)
-          const maxDimension = 2048;
-          if (width > maxDimension || height > maxDimension) {
-            if (width > height) {
-              height = (height / width) * maxDimension;
-              width = maxDimension;
-            } else {
-              width = (width / height) * maxDimension;
-              height = maxDimension;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                const compressedFile = new File([blob], file.name, {
-                  type: 'image/jpeg',
-                  lastModified: Date.now(),
-                });
-                resolve(compressedFile);
-              } else {
-                resolve(file); // Fallback to original
-              }
-            },
-            'image/jpeg',
-            0.85 // 85% quality
-          );
-        };
-        img.src = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleFileSelect = async (file: File) => {
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-      onUploadError('Please upload a valid image file (JPG, PNG, WebP, or GIF)');
-      return;
-    }
-
-    // Compress if needed
-    const processedFile = await compressImage(file);
-    setSelectedImage(processedFile);
-  };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFileSelect(file);
-  };
-
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFileSelect(file);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleUpload = async () => {
-    if (!editorRef.current || !selectedImage) return;
+  const handleSave = async () => {
+    if (!avatarSelection) return;
 
     setIsUploading(true);
 
     try {
-      // Get cropped image as canvas
-      const canvas = editorRef.current.getImageScaledToCanvas();
+      if (avatarSelection.mode === 'generic' && avatarSelection.genericAvatarId) {
+        // Generate the data URL for the generic avatar
+        const avatar = GENERIC_AVATARS.find(a => a.id === avatarSelection.genericAvatarId);
+        if (!avatar) {
+          onUploadError('Selected avatar not found');
+          setIsUploading(false);
+          return;
+        }
 
-      // Convert canvas to blob (WebP format for optimal compression)
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-            else reject(new Error('Failed to create image blob'));
-          },
-          'image/webp',
-          0.9 // Quality 90%
-        );
-      });
+        const dataUrl = generateAvatarDataUrl(avatar);
 
-      // Create FormData
-      const formData = new FormData();
-      formData.append('avatar', blob, 'avatar.webp');
+        // Convert data URL to blob and upload
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
 
-      // Upload to API
-      const response = await fetch('/api/profile/avatar', {
-        method: 'POST',
-        body: formData,
-      });
+        const formData = new FormData();
+        formData.append('avatar', blob, `${avatar.id}.svg`);
 
-      const result = await response.json();
+        const uploadResponse = await fetch('/api/profile/avatar', {
+          method: 'POST',
+          body: formData,
+        });
 
-      if (response.ok && result.success) {
-        onUploadSuccess(result.data.avatar_url);
-        setSelectedImage(null);
-        setScale(1.2);
-        onClose();
-      } else {
-        onUploadError(result.error || 'Upload failed');
+        const result = await uploadResponse.json();
+
+        if (uploadResponse.ok && result.success) {
+          onUploadSuccess(result.data.avatar_url);
+          setAvatarSelection(null);
+          onClose();
+        } else {
+          onUploadError(result.error || 'Upload failed');
+        }
+      } else if (
+        avatarSelection.mode === 'upload' &&
+        avatarSelection.editorRef?.current &&
+        avatarSelection.uploadedFile
+      ) {
+        // Get cropped image from editor
+        const canvas = avatarSelection.editorRef.current.getImageScaledToCanvas();
+
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob(
+            (blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error('Failed to create image blob'));
+            },
+            'image/webp',
+            0.9
+          );
+        });
+
+        const formData = new FormData();
+        formData.append('avatar', blob, 'avatar.webp');
+
+        const uploadResponse = await fetch('/api/profile/avatar', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await uploadResponse.json();
+
+        if (uploadResponse.ok && result.success) {
+          onUploadSuccess(result.data.avatar_url);
+          setAvatarSelection(null);
+          onClose();
+        } else {
+          onUploadError(result.error || 'Upload failed');
+        }
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -180,16 +120,8 @@ export default function AvatarEditModal({
   };
 
   const handleCancel = () => {
-    setSelectedImage(null);
-    setScale(1.2);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setAvatarSelection(null);
     onClose();
-  };
-
-  const handleDropZoneClick = () => {
-    fileInputRef.current?.click();
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -207,13 +139,6 @@ export default function AvatarEditModal({
     if (event.key === 'Escape' && !isUploading) {
       event.stopPropagation();
       handleCancel();
-    }
-  };
-
-  const handleDropZoneKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleDropZoneClick();
     }
   };
 
@@ -245,105 +170,36 @@ export default function AvatarEditModal({
           </button>
         </div>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          onChange={handleFileInputChange}
-          className="hidden"
+        {/* Unified Avatar Selector */}
+        <AvatarSelector
+          onSelectionChange={setAvatarSelection}
+          allowCustomUpload={true}
+          allowGenericAvatars={true}
         />
 
-        {!selectedImage ? (
-          <div
-            onClick={handleDropZoneClick}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className={`
-              cursor-pointer border-2 border-dashed rounded-xl p-12 text-center transition-all
-              ${
-                isDragging
-                  ? 'border-warning-500 bg-warning-50 dark:bg-warning-500/10'
-                  : 'border-warning-300 dark:border-warning-500/30 hover:border-warning-500 dark:hover:border-warning-500/50 hover:bg-warning-50 dark:hover:bg-warning-500/5'
-              }
-            `}
-            role="button"
-            tabIndex={0}
-            onKeyDown={handleDropZoneKeyDown}
-            >
-            <div className="flex flex-col items-center gap-4">
-              <div className="text-5xl">
-                {isDragging ? '📥' : '📷'}
-              </div>
-              <div>
-                <p className="text-warning-500 dark:text-warning-400 font-bold text-lg">
-                  {isDragging ? 'Drop image here' : 'Choose an image'}
-                </p>
-                <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-2">
-                  Click to browse or drag and drop
-                </p>
-                <p className="text-neutral-600 dark:text-neutral-500 text-xs mt-1">
-                  Any image format • Any size (we&apos;ll optimize it)
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex flex-col items-center gap-4 p-6 border-2 border-warning-300 dark:border-warning-500/30 rounded-xl bg-neutral-100 dark:bg-neutral-900/50">
-              <AvatarEditor
-                ref={editorRef}
-                image={selectedImage}
-                width={256}
-                height={256}
-                border={20}
-                borderRadius={128}
-                color={[0, 0, 0, 0.6]}
-                scale={scale}
-                rotate={0}
-                className="rounded-lg"
-              />
+        {/* Action Buttons */}
+        <div className="flex gap-3 pt-4 border-t border-neutral-300 dark:border-neutral-700">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleSave}
+            disabled={isUploading || !avatarSelection}
+            className="flex-1"
+          >
+            {isUploading ? 'Uploading...' : 'Save Avatar'}
+          </Button>
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={handleCancel}
+            disabled={isUploading}
+          >
+            Cancel
+          </Button>
+        </div>
 
-              <div className="w-full space-y-2">
-                <label className="block text-sm font-semibold text-warning-500 dark:text-warning-400">
-                  Zoom: {scale.toFixed(1)}x
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="3"
-                  step="0.1"
-                  value={scale}
-                  onChange={(e) => setScale(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-neutral-300 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="primary"
-                size="md"
-                onClick={handleUpload}
-                disabled={isUploading}
-                className="flex-1"
-              >
-                {isUploading ? 'Uploading...' : 'Save Avatar'}
-              </Button>
-              <Button
-                variant="ghost"
-                size="md"
-                onClick={handleCancel}
-                disabled={isUploading}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Delete Avatar Button - shown at bottom if avatar exists and no image selected */}
-        {currentAvatarUrl && !selectedImage && onDelete && (
+        {/* Delete Avatar Button - shown at bottom if avatar exists */}
+        {currentAvatarUrl && onDelete && (
           <div className="border-t border-neutral-300 dark:border-neutral-700 pt-4">
             <button
               onClick={onDelete}
