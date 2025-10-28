@@ -368,10 +368,13 @@ export default function AnalyticsClient() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-warning-200/20 dark:divide-warning-900/10">
-                  {analytics.top_players.map((player) => {
+                  {analytics.top_players.map((player, index) => {
                     const net = Number.parseFloat(player.net_profit);
+                    const rowKey =
+                      player.profile_id ??
+                      `${player.primary_address ?? player.primary_email ?? 'player'}-${index}`;
                     return (
-                      <tr key={player.profile_id} className="text-neutral-800 dark:text-neutral-200">
+                      <tr key={rowKey} className="text-neutral-800 dark:text-neutral-200">
                         <td className="py-3 pr-4">
                           {player.display_name || 'Anonymous'}
                         </td>

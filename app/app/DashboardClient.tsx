@@ -8,6 +8,7 @@ import Button from '@/components/Button';
 import Avatar from '@/components/Avatar';
 import AvatarEditModal from '@/components/AvatarEditModal';
 import ProfileEditModal from '@/components/ProfileEditModal';
+import ReferralCodesModal from '@/components/ReferralCodesModal';
 import BalancesCard from '@/components/BalancesCard';
 import { TicketIcon, CopyIcon, EditIcon, ExternalLinkIcon } from '@/components/icons';
 import { truncateAddress } from '@/lib/utils/format';
@@ -41,6 +42,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   const [profile, setProfile] = useState(initialData.profile);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
+  const [isReferralCodesModalOpen, setIsReferralCodesModalOpen] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const { signOut } = useSignOut();
@@ -50,7 +52,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
     || initialData.accounts.find((account) => account.chain === 'voi');
 
   // Use React Query for referral stats with caching and automatic refetching
-  const { data: referralStats, isLoading: loadingReferrals } = useQuery<ReferralStats>({
+  const { data: referralStats, isLoading: loadingReferrals, refetch: refetchReferralStats } = useQuery<ReferralStats>({
     queryKey: ['referralStats'],
     queryFn: async () => {
       const response = await fetch('/api/referrals/info');
@@ -73,6 +75,12 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
     staleTime: 2 * 60 * 1000, // 2 minutes for referral stats
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
+
+  const handleReferralCodesModalClose = () => {
+    setIsReferralCodesModalOpen(false);
+    // Refetch stats when modal closes to show any updates
+    refetchReferralStats();
+  };
 
   const handleSaveProfile = async (displayName: string) => {
     const response = await fetch('/api/profile/me', {
@@ -257,6 +265,11 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
         onSave={handleSaveProfile}
       />
 
+      <ReferralCodesModal
+        isOpen={isReferralCodesModalOpen}
+        onClose={handleReferralCodesModalClose}
+      />
+
       {/* Unified Balances Card */}
       {primaryVoiAccount && (
         <BalancesCard address={primaryVoiAccount.address} />
@@ -338,14 +351,17 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
               {/* Actions */}
               <div className="flex justify-center">
-                <a href="/app/referrals">
-                  <Button variant="primary" size="md" className="px-8">
-                    <div className="flex items-center gap-2 justify-center">
-                      <TicketIcon size={20} />
-                      <span>Manage Referral Codes</span>
-                    </div>
-                  </Button>
-                </a>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="px-8"
+                  onClick={() => setIsReferralCodesModalOpen(true)}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <TicketIcon size={20} />
+                    <span>Manage Referral Codes</span>
+                  </div>
+                </Button>
               </div>
             </div>
           ) : (

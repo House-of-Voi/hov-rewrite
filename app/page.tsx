@@ -1,7 +1,13 @@
 import Button from '@/components/Button';
 import { SlotMachineIcon, DiceIcon, CardSuitIcon, BoltIcon, LockIcon, GlobeIcon, CoinsIcon } from '@/components/icons';
+import { isAdmin } from '@/lib/auth/admin';
 
-export default function Page() {
+export default async function Page() {
+  const isAdminUser = await isAdmin(); // Temporary: homepage options restricted to admins
+  const cardInteractivityClasses = isAdminUser
+    ? 'cursor-pointer'
+    : 'cursor-not-allowed opacity-50 pointer-events-none';
+
   return (
     <div className="space-y-24">
       {/* Hero Section */}
@@ -29,8 +35,13 @@ export default function Page() {
             <Button variant="primary" size="lg">
               <a href="/auth">Get Started</a>
             </Button>
-            <Button variant="outline" size="lg">
-              <a href="/games">Browse Games</a>
+            <Button
+              variant="outline"
+              size="lg"
+              disabled={!isAdminUser}
+              title={!isAdminUser ? 'Admin access required' : undefined}
+            >
+              {isAdminUser ? <a href="/games">Browse Games</a> : 'Browse Games'}
             </Button>
           </div>
 
@@ -64,7 +75,7 @@ export default function Page() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="card-interactive p-8 group cursor-pointer">
+          <div className={`card-interactive p-8 group ${cardInteractivityClasses}`} aria-disabled={!isAdminUser}>
             <div className="text-primary-500 dark:text-primary-400 mb-6 group-hover:scale-105 transition-transform flex justify-center">
               <SlotMachineIcon size={56} />
             </div>
@@ -74,12 +85,12 @@ export default function Page() {
             <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed mb-6">
               Spin the reels and watch the rewards roll in. Available on Base, Voi, and Solana.
             </p>
-            <div className="text-sm font-medium text-primary-600 dark:text-primary-400">
+            <div className={`text-sm font-medium ${isAdminUser ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-400 dark:text-neutral-600'}`}>
               Play Now →
             </div>
           </div>
 
-          <div className="card-interactive p-8 group cursor-pointer">
+          <div className={`card-interactive p-8 group ${cardInteractivityClasses}`} aria-disabled={!isAdminUser}>
             <div className="text-accent-500 dark:text-accent-400 mb-6 group-hover:scale-105 transition-transform flex justify-center">
               <DiceIcon size={56} />
             </div>
@@ -89,12 +100,12 @@ export default function Page() {
             <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed mb-6">
               Classic dice games with a modern twist. Fast, fair, and fun to play.
             </p>
-            <div className="text-sm font-medium text-primary-600 dark:text-primary-400">
+            <div className={`text-sm font-medium ${isAdminUser ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-400 dark:text-neutral-600'}`}>
               Play Now →
             </div>
           </div>
 
-          <div className="card-interactive p-8 group cursor-pointer">
+          <div className={`card-interactive p-8 group ${cardInteractivityClasses}`} aria-disabled={!isAdminUser}>
             <div className="text-success-500 dark:text-success-400 mb-6 group-hover:scale-105 transition-transform flex justify-center">
               <CardSuitIcon size={56} />
             </div>
@@ -104,7 +115,7 @@ export default function Page() {
             <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed mb-6">
               Enjoy classic card games with friends. Test your skills and earn rewards.
             </p>
-            <div className="text-sm font-medium text-primary-600 dark:text-primary-400">
+            <div className={`text-sm font-medium ${isAdminUser ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-400 dark:text-neutral-600'}`}>
               Play Now →
             </div>
           </div>

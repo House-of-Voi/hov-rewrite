@@ -8,6 +8,7 @@ import UserNavServer from '@/components/UserNavServer';
 import AdminNavLink from '@/components/AdminNavLink';
 import GamesNavLink from '@/components/GamesNavLink';
 import { RouteLoadingIndicator } from '@/components/RouteLoadingIndicator';
+import { isAdmin } from '@/lib/auth/admin';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -17,7 +18,11 @@ const inter = Inter({
 
 export const metadata = { title: 'House of Voi', description: 'Fun games and rewards on the blockchain' };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const isAdminUser = await isAdmin(); // Temporary: gate nav links behind admin access
+  const disabledNavClass =
+    'px-4 py-2 text-sm font-medium text-neutral-400 dark:text-neutral-600 rounded-lg pointer-events-none cursor-not-allowed';
+
   return (
     <html lang="en" className="antialiased">
       <body className={`${inter.className} min-h-screen`}>
@@ -51,21 +56,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     >
                       Home
                     </Link>
-                    <GamesNavLink />
-                    <Link
-                      href="/stats"
-                      prefetch={true}
-                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors duration-200"
-                    >
-                      Stats
-                    </Link>
-                    <Link
-                      href="/leaderboard"
-                      prefetch={true}
-                      className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors duration-200"
-                    >
-                      Leaderboard
-                    </Link>
+                    {isAdminUser ? (
+                      <GamesNavLink />
+                    ) : (
+                      <span aria-disabled="true" className={disabledNavClass}>
+                        Games
+                      </span>
+                    )}
+                    {isAdminUser ? (
+                      <Link
+                        href="/stats"
+                        prefetch={true}
+                        className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors duration-200"
+                      >
+                        Stats
+                      </Link>
+                    ) : (
+                      <span aria-disabled="true" className={disabledNavClass}>
+                        Stats
+                      </span>
+                    )}
+                    {isAdminUser ? (
+                      <Link
+                        href="/leaderboard"
+                        prefetch={true}
+                        className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors duration-200"
+                      >
+                        Leaderboard
+                      </Link>
+                    ) : (
+                      <span aria-disabled="true" className={disabledNavClass}>
+                        Leaderboard
+                      </span>
+                    )}
                     <AdminNavLink />
                     <UserNavServer />
                   </nav>

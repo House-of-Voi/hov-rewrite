@@ -1,5 +1,6 @@
-import ReferralsClient from './ReferralsClient';
+import { redirect } from 'next/navigation';
 
 export default function ReferralsPage() {
-  return <ReferralsClient />;
+  // Referral management is now a modal in the dashboard
+  redirect('/app');
 }
