@@ -100,6 +100,8 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
     setTimeout(() => setStatus(null), 3000);
   };
 
+  // Logout is now handled by UserNav component
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleLogout = async () => {
     try {
       // First sign out from Coinbase CDP
@@ -154,9 +156,6 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
             Manage your profile, wallets, and referrals.
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleLogout}>
-          Sign Out
-        </Button>
       </div>
 
       {/* Status Message */}

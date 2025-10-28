@@ -17,6 +17,7 @@ import {
 import Card, { CardContent } from '@/components/Card';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
+import AuthLoadingOverlay from '@/components/AuthLoadingOverlay';
 import algosdk from 'algosdk';
 import { buildProofOfOwnershipTransaction } from '@/lib/chains/algorand-browser';
 import { deriveAlgorandAccountFromEVM } from '@/lib/chains/algorand-derive';
@@ -63,8 +64,9 @@ export default function AuthPage() {
   const [phone, setPhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [flowId, setFlowId] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [authMethod, setAuthMethod] = useState<'email' | 'sms' | 'oauth' | null>(null);
   const [otpSent, setOtpSent] = useState(false);
   const [oauthProcessed, setOauthProcessed] = useState(false);
@@ -86,22 +88,21 @@ export default function AuthPage() {
    */
   async function handleEmailAuth() {
     if (!email) {
-      setStatus('Please enter your email address');
+      setError('Please enter your email address');
       return;
     }
 
     setLoading(true);
-    setStatus('Sending verification code to your email...');
+    setError(null);
 
     try {
       const result = await signInWithEmail({ email });
       setFlowId(result.flowId);
       setAuthMethod('email');
       setOtpSent(true);
-      setStatus('Check your email for the verification code');
     } catch (error) {
       console.error('Email auth error:', error);
-      setStatus('Failed to send verification code. Please try again.');
+      setError('Failed to send verification code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -112,19 +113,19 @@ export default function AuthPage() {
    */
   async function handleSmsAuth() {
     if (!phone) {
-      setStatus('Please enter your phone number');
+      setError('Please enter your phone number');
       return;
     }
 
     const normalizedPhone = normalizeE164Phone(phone);
 
     if (!normalizedPhone) {
-      setStatus('Please enter a valid phone number (10 digits for US numbers or full international format).');
+      setError('Please enter a valid phone number (10 digits for US numbers or full international format).');
       return;
     }
 
     setLoading(true);
-    setStatus('Sending verification code to your phone...');
+    setError(null);
 
     try {
       const result = await signInWithSms({ phoneNumber: normalizedPhone });
@@ -132,10 +133,9 @@ export default function AuthPage() {
       setAuthMethod('sms');
       setOtpSent(true);
       setPhone(normalizedPhone);
-      setStatus('Check your phone for the verification code');
     } catch (error) {
       console.error('SMS auth error:', error);
-      setStatus('Failed to send verification code. Please try again.');
+      setError('Failed to send verification code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -146,12 +146,12 @@ export default function AuthPage() {
    */
   async function handleVerifyOtp() {
     if (!otpCode || !flowId || !authMethod) {
-      setStatus('Please enter the verification code');
+      setError('Please enter the verification code');
       return;
     }
 
     setLoading(true);
-    setStatus('Verifying code...');
+    setError(null);
 
     try {
       let user;
@@ -167,14 +167,11 @@ export default function AuthPage() {
         throw new Error('Invalid authentication method');
       }
 
-      setStatus('Authentication successful! Setting up your account...');
-
       // Complete backend session creation
       await completeAuthentication(user);
     } catch (error) {
       console.error('OTP verification error:', error);
-      setStatus('Verification failed. Please check your code and try again.');
-    } finally {
+      setError('Verification failed. Please check your code and try again.');
       setLoading(false);
     }
   }
@@ -184,21 +181,21 @@ export default function AuthPage() {
    */
   async function handleSocialLogin(provider: OAuth2ProviderType) {
     setLoading(true);
-    setStatus(`Connecting to ${provider}...`);
+    setError(null);
 
     try {
       await signInWithOAuth(provider);
       // OAuth flow will redirect and come back with user authenticated
     } catch (error) {
       console.error('Social login error:', error);
-      setStatus(`Failed to connect with ${provider}. Please try again.`);
+      setError(`Failed to connect with ${provider}. Please try again.`);
       setLoading(false);
     }
   }
 
   const completeAuthentication = useCallback(async (user: User) => {
     setLoading(true);
-    setStatus('Verifying your Coinbase session...');
+    setError(null);
 
     async function linkAlgorandWallet({
       serverBaseAddress,
@@ -224,7 +221,6 @@ export default function AuthPage() {
         throw new Error('Unable to determine your Base wallet address for export.');
       }
 
-      setStatus('Exporting your embedded Base wallet key...');
       let exportedPrivateKey: string | null = null;
       for (const candidate of candidateAccounts) {
         try {
@@ -244,13 +240,11 @@ export default function AuthPage() {
         );
       }
 
-      setStatus('Deriving your Algorand wallet locally...');
       const derivedAccount = deriveAlgorandAccountFromEVM(exportedPrivateKey);
 
       // Best-effort cleanup of EVM private key string
       exportedPrivateKey = '';
 
-      setStatus('Requesting ownership challenge...');
       const challengeResponse = await fetch('/api/auth/algorand/challenge', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -275,7 +269,6 @@ export default function AuthPage() {
         throw new Error('Challenge response did not match your Base wallet address.');
       }
 
-      setStatus('Signing Algorand ownership proof...');
       const proofTxn = buildProofOfOwnershipTransaction(derivedAccount.address, challenge);
       const signedTxn = algosdk.signTransaction(proofTxn, derivedAccount.secretKey);
       const signedTxnBase64 = algosdk.bytesToBase64(signedTxn.blob);
@@ -283,7 +276,6 @@ export default function AuthPage() {
       // Overwrite the secret key in memory after signing
       derivedAccount.secretKey.fill(0);
 
-      setStatus('Linking Algorand wallet to your profile...');
       const linkResponse = await fetch('/api/auth/algorand/link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -349,7 +341,7 @@ export default function AuthPage() {
         });
       }
 
-      setStatus('Success! Redirecting to your dashboard...');
+      setIsSuccess(true);
 
       // Emit login success event for UserNav to refresh
       if (typeof window !== 'undefined') {
@@ -364,7 +356,7 @@ export default function AuthPage() {
 
       // If token expired, clear state and prompt for re-auth
       if (errorMessage.includes('expired') || errorMessage.includes('Invalid or expired CDP')) {
-        setStatus('Session expired. Please sign in again.');
+        setError('Session expired. Please sign in again.');
         setOtpSent(false);
         setOtpCode('');
         setEmail('');
@@ -374,7 +366,7 @@ export default function AuthPage() {
         // Clear any stale cookies
         document.cookie = 'hov_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       } else {
-        setStatus(errorMessage);
+        setError(errorMessage);
       }
 
       setLoading(false);
@@ -385,7 +377,6 @@ export default function AuthPage() {
   useEffect(() => {
     if (currentUser && !oauthProcessed && !loading) {
       setOauthProcessed(true);
-      setStatus('Restoring your session...');
 
       // Determine auth method from OAuth state or default to email
       const method = oauthState?.status === 'success' ? 'oauth' : 'email';
@@ -396,30 +387,28 @@ export default function AuthPage() {
   }, [oauthState, currentUser, oauthProcessed, loading, completeAuthentication]);
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-black text-warning-500 dark:text-warning-400 neon-text uppercase">
-            Welcome
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400">
-            Sign in or create your account
-          </p>
-        </div>
+    <>
+      {/* Full-page loading overlay */}
+      <AuthLoadingOverlay isLoading={loading} isSuccess={isSuccess} error={null} />
 
-        {/* Status Display */}
-        {status && (
-          <div className={`p-4 rounded-xl text-center font-semibold ${
-            status.includes('Success')
-              ? 'bg-success-100 dark:bg-success-500/20 text-success-600 dark:text-success-400 border border-success-300 dark:border-success-500/30'
-              : status.includes('Error') || status.includes('failed') || status.includes('Failed')
-              ? 'bg-error-100 dark:bg-error-500/20 text-error-600 dark:text-error-400 border border-error-300 dark:border-error-500/30'
-              : 'bg-warning-100 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400 border border-warning-300 dark:border-warning-500/30'
-          }`}>
-            {status}
+      <div className="min-h-[80vh] flex items-center justify-center py-12">
+        <div className="w-full max-w-md space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-4xl font-black text-warning-500 dark:text-warning-400 neon-text uppercase">
+              Welcome
+            </h1>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Sign in or create your account
+            </p>
           </div>
-        )}
+
+          {/* Error Display */}
+          {error && (
+            <div className="p-4 rounded-xl text-center font-semibold bg-error-100 dark:bg-error-500/20 text-error-600 dark:text-error-400 border border-error-300 dark:border-error-500/30">
+              {error}
+            </div>
+          )}
 
         {/* Main Auth Card */}
         <Card glow>
@@ -555,7 +544,7 @@ export default function AuthPage() {
                   onClick={() => {
                     setOtpSent(false);
                     setOtpCode('');
-                    setStatus(null);
+                    setError(null);
                   }}
                   disabled={loading}
                   className="w-full text-center text-sm text-neutral-600 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-400 underline"
@@ -567,11 +556,12 @@ export default function AuthPage() {
           </CardContent>
         </Card>
 
-        {/* Footer Info */}
-        <p className="text-center text-xs text-neutral-600 dark:text-neutral-500">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
+          {/* Footer Info */}
+          <p className="text-center text-xs text-neutral-600 dark:text-neutral-500">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
